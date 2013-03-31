@@ -1,0 +1,6 @@
+lib/Mojolicious/Plugin/HostMeta.pm
+t/HostMeta.t
+Changes
+MANIFEST
+LICENSE
+Makefile.PL

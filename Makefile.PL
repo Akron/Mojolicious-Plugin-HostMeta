@@ -1,0 +1,32 @@
+#!/usr/bin/env perl
+use 5.010001;
+use strict;
+use warnings;
+use ExtUtils::MakeMaker;
+
+WriteMakefile(
+  NAME         => 'Mojolicious::Plugin::HostMeta',
+  AUTHOR       => 'Nils Diewald',
+  ABSTRACT     => '',
+  VERSION_FROM => 'lib/Mojolicious/Plugin/HostMeta.pm',
+  BUILD_REQUIRES => {
+    'Test::More' => 0
+  },
+  PREREQ_PM => {
+    'Mojolicious' => 3.86,
+    'XML::Loy' => 0.13,
+    'Mojolicious::Plugin::XRD' => 0.02,
+    'Mojolicious::Plugin::Util::Endpoint' => 0.12,
+    'Mojolicious::Plugin::Util::Callback' => 0.02
+  },
+  LICENSE      => 'perl',
+  META_MERGE   => {
+    requires  => { perl => '5.010001' },
+    resources => {
+      license     => 'http://www.opensource.org/licenses/artistic-license-2.0',
+      repository  => 'https://github.com/Akron/Mojolicious-Plugin-HostMeta'
+    }
+  },
+  MIN_PERL_VERSION => '5.010001',
+  test => {TESTS => 't/*.t'}
+);
