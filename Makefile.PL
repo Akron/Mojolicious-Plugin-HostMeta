@@ -7,7 +7,7 @@ use ExtUtils::MakeMaker;
 WriteMakefile(
   NAME         => 'Mojolicious::Plugin::HostMeta',
   AUTHOR       => 'Nils Diewald',
-  ABSTRACT     => '',
+  ABSTRACT     => 'Serve and Retrieve Host-Meta documents',
   VERSION_FROM => 'lib/Mojolicious/Plugin/HostMeta.pm',
   BUILD_REQUIRES => {
     'Test::More' => 0
