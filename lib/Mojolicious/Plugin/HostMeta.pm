@@ -4,7 +4,6 @@ use Mojo::UserAgent;
 use Mojo::JSON;
 use Mojo::Util qw/quote/;
 
-# Todo: Test using hypnotoad
 # Todo: Support async callback
 # Todo: Disallow insecure hops
 
@@ -45,7 +44,6 @@ sub register {
 
   my $hostmeta = $mojo->new_xrd;
   $hostmeta->extension('XML::Loy::HostMeta');
-  $hostmeta->expires(time + $seconds) if $seconds;
 
   # Get host information on first request
   $mojo->hook(
@@ -99,16 +97,21 @@ sub register {
 	return $c->render_xrd(undef, $res);
       };
 
-      # Set cache control
-      my $headers = $c->res->headers;
-      $headers->cache_control(
-	"public, max-age=$seconds"
-      );
+      # Seconds given
+      if ($seconds) {
 
-      # Set expires header
-      $headers->expires(
-	Mojo::Date->new->epoch(time + $seconds)->to_string
-      );
+	# Set cache control
+	my $headers = $c->res->headers;
+	$headers->cache_control(
+	  "public, max-age=$seconds"
+	);
+
+	# Set expires element
+	$hostmeta->expires(time + $seconds);
+
+	# Set expires header
+	$headers->expires($hostmeta->expires);
+      };
 
       # Serve host-meta document
       return $c->render_xrd(
@@ -195,6 +198,7 @@ sub _fetch_hostmeta {
       #   return undef;
       # };
 
+      # Only support secure retrieval
       return if $secure;
 
       # Update insecure max_redirects;
@@ -203,15 +207,21 @@ sub _fetch_hostmeta {
       # Then try insecure
       $tx = $ua->get("http://${host_hm_path}${res_param}");
 
+      # Transaction was successful
       if ($host_hm = $tx->success) {
+
+	# Retrieval was successful
 	return unless $host_hm->is_status_class(200);
       }
+
+      # Transaction was not successful
       else {
 	return;
       };
     }
   }
 
+  # Transaction was not successful
   else {
     return;
   };
@@ -453,6 +463,19 @@ and the L<headers|Mojo::Headers> object of the response.
 This hook is not released after a successful LRDD resource request.
 
 This can be used for caching.
+
+
+=head1 EXAMPLE
+
+The C<examples/> folder contains a full working example application with serving
+and discovery.
+The example has an additional dependency of L<CHI>.
+
+It can be started using the daemon, morbo or hypnotoad.
+
+  $ perl examples/hostmetaapp daemon
+
+This example may be a good starting point for your own implementation.
 
 
 =head1 DEPENDENCIES
