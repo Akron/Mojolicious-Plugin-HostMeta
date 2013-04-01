@@ -1,6 +1,8 @@
 blib
 log
-Sandbox
+sandbox
+examples/*
+!examples/hostmetaapp
 public
 todo.org
 create-cpan.pl
