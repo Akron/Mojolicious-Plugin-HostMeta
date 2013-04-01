@@ -376,14 +376,6 @@ An additional C<-secure> flag indicates, that discovery is allowed
 only over C<https> without redirections.
 
 
-=head1 ROUTES
-
-The route C</.well-known/host-meta> is established and serves
-the host's own host-meta document.
-An L<endpoint|Mojolicious::Plugin::Util::Endpoint> called
-C<host-meta> is established.
-
-
 =head1 CALLBACKS
 
 =head2 hostmeta_fetch
@@ -414,6 +406,7 @@ L<callback|Mojolicious::Plugin::Util::Callback/callback>
 helper or on registration.
 
 This can be used for caching.
+
 
 =head1 HOOKS
 
@@ -463,6 +456,14 @@ and the L<headers|Mojo::Headers> object of the response.
 This hook is not released after a successful LRDD resource request.
 
 This can be used for caching.
+
+
+=head1 ROUTES
+
+The route C</.well-known/host-meta> is established and serves
+the host's own host-meta document.
+An L<endpoint|Mojolicious::Plugin::Util::Endpoint> called
+C<host-meta> is established.
 
 
 =head1 EXAMPLE
