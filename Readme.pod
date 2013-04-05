@@ -12,15 +12,20 @@ Mojolicious::Plugin::HostMeta - Serve and Retrieve Host-Meta documents
   # Mojolicious::Lite
   plugin 'HostMeta';
 
-  # In Controllers
+  # Serves XRD or JRD from /.well-known/host-meta
+
+  # Blocking requests
   print $self->hostmeta('gmail.com')->link('lrrd');
 
-  print $self->endpoint('host-meta');
+  # Non-blocking requests
+  $self->hostmeta('gmail.com' => sub {
+    print shift->link('lrrd');
+  });
 
 =head1 DESCRIPTION
 
 L<Mojolicious::Plugin::HostMeta> is a Mojolicious plugin to serve and
-retrieve "well-known" L<Host-Meta|https://tools.ietf.org/html/rfc6415>
+request "well-known" L<Host-Meta|https://tools.ietf.org/html/rfc6415>
 documents.
 
 
@@ -29,7 +34,7 @@ documents.
 =head2 C<register>
 
   # Mojolicious
-  $app->plugin('HostMeta' => {
+  $app->plugin(HostMeta => {
     expires => 100
   });
 
@@ -38,7 +43,7 @@ documents.
 
 Called when registering the plugin.
 Accepts one optional parameter C<expires>, which is the number
-of seconds the served host-meta should be cached.
+of seconds the served host-meta should be cached by the fetching client.
 Defaults to 10 days.
 
 
@@ -49,36 +54,32 @@ Defaults to 10 days.
   # In Controller:
   my $xrd = $self->hostmeta;
   $xrd = $self->hostmeta('gmail.com');
-  $xrd = $self->hostmeta('sojolicio.us' => {
-    rel => 'hub'
-  });
+  $xrd = $self->hostmeta('sojolicio.us' => ['hub']);
   $xrd = $self->hostmeta('gmail.com', -secure);
+
+  # Non blocking
+  $self->hostmeta('gmail.com', ['hub'] => sub {
+    my $xrd = shift;
+    # ...
+  }, -secure);
 
 This helper returns host-meta documents
 as L<XML::Loy::XRD> objects with the
 L<XML::Loy::HostMeta> extension.
 
-If no host is given, the local host-meta document is returned.
-If a hostname is given, the corresponding host-meta document
+If no host name is given, the local host-meta document is returned.
+If a host name is given, the corresponding host-meta document
 is retrieved from the host and returned.
-In that case an additional hash reference is accepted.
-It may include a C<rel> parameter
-(see the L<WebFinger|http://tools.ietf.org/html/draft-ietf-appsawg-webfinger>
-specification for further explanation)
-and may include a C<resource> parameter, which will be passed
-to L<WebFinger|Mojolicious::Plugin::WebFinger> if this plugin
-is installed.
 
-An additional C<-secure> flag indicates, that discovery is allowed
+An additional array reference may limit the relations to be retrieved
+(see the L<WebFinger|http://tools.ietf.org/html/draft-ietf-appsawg-webfinger>
+specification for further explanation).
+A final C<-secure> flag indicates, that discovery is allowed
 only over C<https> without redirections.
 
-
-=head1 ROUTES
-
-The route C</.well-known/host-meta> is established and serves
-the host's own host-meta document.
-An L<endpoint|Mojolicious::Plugin::Util::Endpoint> called
-C<host-meta> is established.
+This method can be used in a blocking or non-blocking way.
+For non-blocking retrievel, pass a callback function as the
+last argument before the optional C<-secure> flag to the method.
 
 
 =head1 CALLBACKS
@@ -112,6 +113,7 @@ helper or on registration.
 
 This can be used for caching.
 
+
 =head1 HOOKS
 
 =head2 prepare_hostmeta
@@ -139,6 +141,8 @@ This hook is only emitted once for each subscriber.
 This hook is run before the host's own host-meta document is
 served. The hook passes the current controller object and
 the host-meta document as an L<XML::Loy::XRD> object.
+This should be used for dynamical changes of the document
+for each request.
 
 
 =head2 after_fetching_hostmeta
@@ -157,15 +161,21 @@ The parameters passed to the hook are the current controller object,
 the host name, the XRD document as an L<XML::Loy::XRD> object
 and the L<headers|Mojo::Headers> object of the response.
 
-This hook is not released after a successful LRDD resource request.
-
 This can be used for caching.
+
+
+=head1 ROUTES
+
+The route C</.well-known/host-meta> is established and serves
+the host's own host-meta document.
+An L<endpoint|Mojolicious::Plugin::Util::Endpoint> called
+C<host-meta> is established.
 
 
 =head1 EXAMPLE
 
-The C<examples/> folder contains a full working example application with serving
-and discovery.
+The C<examples/> folder contains a full working example application
+with serving and discovery.
 The example has an additional dependency of L<CHI>.
 
 It can be started using the daemon, morbo or hypnotoad.
@@ -173,6 +183,12 @@ It can be started using the daemon, morbo or hypnotoad.
   $ perl examples/hostmetaapp daemon
 
 This example may be a good starting point for your own implementation.
+
+A less advanced application using non-blocking requests without caching
+is also available in the C<examples/> folder. It can be started using
+the daemon, morbo or hypnotoad as well.
+
+  $ perl examples/hostmetaapp-async daemon
 
 
 =head1 DEPENDENCIES

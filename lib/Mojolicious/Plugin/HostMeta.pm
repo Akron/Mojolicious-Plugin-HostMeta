@@ -6,8 +6,8 @@ use Mojo::Util qw/quote/;
 use Mojo::IOLoop;
 use Scalar::Util 'weaken';
 
-# Todo: Add Acceptance for XRD and jrd and json
-
+# Todo:
+# - Add Acceptance for XRD and JRD and JSON as a header
 
 our $VERSION = 0.03;
 
@@ -371,20 +371,20 @@ Mojolicious::Plugin::HostMeta - Serve and Retrieve Host-Meta documents
   # Mojolicious::Lite
   plugin 'HostMeta';
 
-  # Serves XRD or JRD from .well-known/host-meta
+  # Serves XRD or JRD from /.well-known/host-meta
 
   # Blocking requests
   print $self->hostmeta('gmail.com')->link('lrrd');
 
   # Non-blocking requests
   $self->hostmeta('gmail.com' => sub {
-    print shift->link('lrrd')
+    print shift->link('lrrd');
   });
 
 =head1 DESCRIPTION
 
 L<Mojolicious::Plugin::HostMeta> is a Mojolicious plugin to serve and
-retrieve "well-known" L<Host-Meta|https://tools.ietf.org/html/rfc6415>
+request "well-known" L<Host-Meta|https://tools.ietf.org/html/rfc6415>
 documents.
 
 
@@ -533,8 +533,8 @@ C<host-meta> is established.
 
 =head1 EXAMPLE
 
-The C<examples/> folder contains a full working example application with serving
-and discovery.
+The C<examples/> folder contains a full working example application
+with serving and discovery.
 The example has an additional dependency of L<CHI>.
 
 It can be started using the daemon, morbo or hypnotoad.
