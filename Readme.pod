@@ -4,6 +4,7 @@
 
 Mojolicious::Plugin::HostMeta - Serve and Retrieve Host-Meta documents
 
+
 =head1 SYNOPSIS
 
   # Mojolicious
@@ -21,6 +22,7 @@ Mojolicious::Plugin::HostMeta - Serve and Retrieve Host-Meta documents
   $self->hostmeta('gmail.com' => sub {
     print shift->link('lrrd');
   });
+
 
 =head1 DESCRIPTION
 
@@ -45,6 +47,8 @@ Called when registering the plugin.
 Accepts one optional parameter C<expires>, which is the number
 of seconds the served host-meta should be cached by the fetching client.
 Defaults to 10 days.
+This parameter can be set either on registration or
+as part of the configuration file with the key C<HostMeta>.
 
 
 =head1 HELPERS
@@ -78,7 +82,7 @@ A final C<-secure> flag indicates, that discovery is allowed
 only over C<https> without redirections.
 
 This method can be used in a blocking or non-blocking way.
-For non-blocking retrievel, pass a callback function as the
+For non-blocking retrieval, pass a callback function as the
 last argument before the optional C<-secure> flag to the method.
 
 

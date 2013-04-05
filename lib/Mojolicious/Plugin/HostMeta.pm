@@ -4,7 +4,6 @@ use Mojo::UserAgent;
 use Mojo::JSON;
 use Mojo::Util qw/quote/;
 use Mojo::IOLoop;
-use Scalar::Util 'weaken';
 
 # Todo:
 # - Add Acceptance for XRD and JRD and JSON as a header
@@ -20,16 +19,19 @@ my $UA_NAME = __PACKAGE__ . ' v' . $VERSION;
 sub register {
   my ($plugin, $mojo, $param) = @_;
 
-  my $helpers = $mojo->renderer->helpers;
+  $param ||= {};
 
-  # Load Util-Endpoint if not already loaded
-  unless (exists $helpers->{endpoint}) {
-    $mojo->plugin('Util::Endpoint');
+  # Load parameter from Config file
+  if (my $config_param = $mojo->config('HostMeta')) {
+    $param = { %$config_param, %$param };
   };
 
-  # Load Util-Endpoint if not already loaded
-  unless (exists $helpers->{callback}) {
-    $mojo->plugin('Util::Callback');
+  # Get helpers object
+  my $helpers = $mojo->renderer->helpers;
+
+  # Load Util-Endpoint/Callback if not already loaded
+  foreach (qw/Endpoint Callback/) {
+    $mojo->plugin('Util::' . $_) unless exists $helpers->{lc $_};
   };
 
   # Set callbacks on registration
@@ -352,6 +354,7 @@ sub _parse_hostmeta {
   return $hostmeta_xrd;
 };
 
+
 1;
 
 
@@ -362,6 +365,7 @@ __END__
 =head1 NAME
 
 Mojolicious::Plugin::HostMeta - Serve and Retrieve Host-Meta documents
+
 
 =head1 SYNOPSIS
 
@@ -380,6 +384,7 @@ Mojolicious::Plugin::HostMeta - Serve and Retrieve Host-Meta documents
   $self->hostmeta('gmail.com' => sub {
     print shift->link('lrrd');
   });
+
 
 =head1 DESCRIPTION
 
@@ -404,6 +409,8 @@ Called when registering the plugin.
 Accepts one optional parameter C<expires>, which is the number
 of seconds the served host-meta should be cached by the fetching client.
 Defaults to 10 days.
+This parameter can be set either on registration or
+as part of the configuration file with the key C<HostMeta>.
 
 
 =head1 HELPERS
@@ -437,7 +444,7 @@ A final C<-secure> flag indicates, that discovery is allowed
 only over C<https> without redirections.
 
 This method can be used in a blocking or non-blocking way.
-For non-blocking retrievel, pass a callback function as the
+For non-blocking retrieval, pass a callback function as the
 last argument before the optional C<-secure> flag to the method.
 
 

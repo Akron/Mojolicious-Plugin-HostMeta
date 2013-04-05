@@ -2,6 +2,7 @@
         - Added async methods.
 	- added async example.
 	- Fixed async-mode.
+	- Added support for configuration files.
 
 0.02 2013-04-01
         - Added example script.
