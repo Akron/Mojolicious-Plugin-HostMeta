@@ -3,6 +3,7 @@ log
 sandbox
 examples/*
 !examples/hostmetaapp
+!examples/hostmetaapp-async
 public
 todo.org
 create-cpan.pl

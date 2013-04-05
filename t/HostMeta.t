@@ -1,9 +1,6 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-
-$|++;
-
 use lib ('lib', '../lib');
 
 use Test::More;
@@ -30,7 +27,6 @@ $app->hook(
     $base->parse('http://' . $hm_host . '/');
     $base->port('');
   });
-
 
 my $h = $app->renderer->helpers;
 
@@ -167,7 +163,99 @@ $t->get_ok('/.well-known/host-meta?rel=author')
   ->status_is(200)
   ->element_exists_not('Link[rel="salmon"]');
 
+ok($xrd = $c->hostmeta, 'Get local HostMeta');
+
+is($xrd->property('permanentcheck')->text, 1, 'Property 1');
+is($xrd->property('foo')->text, 'bar', 'Property 2');
+is($xrd->property('check')->text, 7, 'Property 3');
+is($xrd->link('salmon')->attrs('href'), 'http://www.sojolicio.us/', 'Link 1');
+ok(!$xrd->link('author'), 'Link 2');
+
+ok($xrd = $c->hostmeta(['author']), 'Get local HostMeta');
+
+is($xrd->property('permanentcheck')->text, 1, 'Property 4');
+is($xrd->property('foo')->text, 'bar', 'Property 5');
+is($xrd->property('check')->text, 8, 'Property 6');
+ok(!$xrd->link('salmon'), 'Link 3');
+ok(!$xrd->link('author'), 'Link 4');
+
+$c->hostmeta(
+  sub {
+    my $xrd = shift;
+    is($xrd->property('permanentcheck')->text, 1, 'Property 7');
+    is($xrd->property('check')->text, 9, 'Property 8');
+    is($xrd->link('salmon')->attrs('href'),
+       'http://www.sojolicio.us/', 'Link 5');
+});
+
+$c->hostmeta(
+  ['author'] => sub {
+    my $xrd = shift;
+    is($xrd->property('permanentcheck')->text, 1, 'Property 9');
+    is($xrd->property('check')->text, 10, 'Property 10');
+    ok(!$xrd->link('salmon'), 'Link 6');
+});
+
+$c->hostmeta(
+  undef, ['author'] => sub {
+    my $xrd = shift;
+    is($xrd->property('permanentcheck')->text, 1, 'Property 11');
+    is($xrd->property('check')->text, 11, 'Property 12');
+    ok(!$xrd->link('salmon'), 'Link 7');
+});
+
+# Live tests
 done_testing;
 exit;
+
+$c->hostmeta(
+  'undef', ['author'] => sub {
+    my $xrd = shift;
+    ok(!$xrd, 'Not found');
+});
+
+is($c->hostmeta('yahoo.com')->subject, 'yahoo.com', 'Title');
+ok(!$c->hostmeta('yahoo.com', -secure), 'Not found for secure');
+
+$c->hostmeta(
+  'yahoo.com' => sub {
+    ok(!$_[0], 'Insecure');
+  } => -secure);
+
+$c->hostmeta(
+  'yahoo.com' => sub {
+    my $xrd = shift;
+    is($xrd->link('hub')->attrs('href'),
+       'http://yhub.yahoo.com',
+       'Correct template');
+    is($xrd->subject, 'yahoo.com', 'Title');
+  });
+
+$c->hostmeta(
+  'e14n.com' => sub {
+    my $xrd = shift;
+    is($xrd->link('lrdd')->attrs('template'),
+       'https://e14n.com/api/lrdd?resource={uri}',
+       'Correct template');
+
+    is($xrd->link('registration_endpoint')->attrs('href'),
+       'https://e14n.com/api/client/register',
+       'Correct template');
+});
+
+$c->hostmeta(
+  'e14n.com' => ['lrdd'] => sub {
+    my $xrd = shift;
+    is($xrd->link('lrdd')->attrs('template'),
+       'https://e14n.com/api/lrdd?resource={uri}',
+       'Correct template');
+    ok(!$xrd->link('registration_endpoint'),
+       'no registration endpoint');
+});
+
+
+done_testing;
+exit;
+
 
 __END__
