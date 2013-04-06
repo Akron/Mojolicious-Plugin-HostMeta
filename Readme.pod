@@ -59,10 +59,11 @@ as part of the configuration file with the key C<HostMeta>.
   my $xrd = $self->hostmeta;
   $xrd = $self->hostmeta('gmail.com');
   $xrd = $self->hostmeta('sojolicio.us' => ['hub']);
+  $xrd = $self->hostmeta('sojolicio.us', {'X-MyHeader' => 'Fun' } => ['hub']);
   $xrd = $self->hostmeta('gmail.com', -secure);
 
   # Non blocking
-  $self->hostmeta('gmail.com', ['hub'] => sub {
+  $self->hostmeta('gmail.com' => ['hub'] => sub {
     my $xrd = shift;
     # ...
   }, -secure);
@@ -75,6 +76,8 @@ If no host name is given, the local host-meta document is returned.
 If a host name is given, the corresponding host-meta document
 is retrieved from the host and returned.
 
+An additional array reference or L<Mojo::Headers> object can be used to pass header
+information for retrieval.
 An additional array reference may limit the relations to be retrieved
 (see the L<WebFinger|http://tools.ietf.org/html/draft-ietf-appsawg-webfinger>
 specification for further explanation).
@@ -95,11 +98,13 @@ last argument before the optional C<-secure> flag to the method.
     hostmeta_fetch => sub {
       my ($c, $host) = @_;
 
-      my $doc = $c->chi->get('hostmeta-' . $host);
+      my $doc = $c->chi->get("hostmeta-$host");
       return unless $doc;
 
+      my $header = $c->chi->get("hostmeta-$host-headers");
+
       # Return document
-      return $c->new_xrd($doc);
+      return ($c->new_xrd($doc), Mojo::Headers->new->parse($header));
     }
   );
 
@@ -109,7 +114,8 @@ callback include the current controller object and the host's
 name.
 
 If a L<XML::Loy::XRD> document associated with the requested
-host name is returned, the retrieval will stop.
+host name is returned (and optionally a L<Mojo::Headers) object),
+the retrieval will stop.
 
 The callback can be established with the
 L<callback|Mojolicious::Plugin::Util::Callback/callback>
@@ -123,8 +129,7 @@ This can be used for caching.
 =head2 prepare_hostmeta
 
   $mojo->hook(prepare_hostmeta => sub {
-    my $c = shift;
-    my $hostmeta = shift;
+    my ($c, $hostmeta) = @_;
     $hostmeta->link(permanent => '/perma.html');
   };
 
@@ -137,8 +142,7 @@ This hook is only emitted once for each subscriber.
 =head2 before_serving_hostmeta
 
   $mojo->hook('before_serving_hostmeta' => sub {
-    my $c = shift;
-    my $hostmeta = shift;
+    my ($c, $hostmeta) = @_;
     $hostmeta->link(lrdd => './well-known/host-meta');
   };
 
@@ -156,7 +160,9 @@ for each request.
       my ($c, $host, $xrd, $headers) = @_;
 
       # Store in cache
-      $c->chi->set('hostmeta-' . $host => $xrd->to_xml);
+      my $chi = $c->chi;
+      $chi->set("hostmeta-$host" => $xrd->to_xml);
+      $chi->set("hostmeta-$host-headers" => $headers->to_string);
     }
   );
 
