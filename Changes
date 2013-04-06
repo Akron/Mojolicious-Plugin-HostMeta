@@ -2,6 +2,7 @@
         - Use get_xrd() method from
 	  Mojolicious::Plugin::XRD 0.04.
 	- use filter_rel() method from XML::Loy::XRD 0.15.
+	- Initial release on CPAN.
 
 0.03 2013-04-05
         - Added async methods.
