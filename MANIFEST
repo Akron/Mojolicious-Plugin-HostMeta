@@ -1,5 +1,7 @@
 lib/Mojolicious/Plugin/HostMeta.pm
 t/HostMeta.t
+examples/hostmetaapp
+examples/hostmetaapp-async
 Changes
 MANIFEST
 LICENSE

@@ -349,7 +349,7 @@ as part of the configuration file with the key C<HostMeta>.
   my $xrd = $self->hostmeta;
   $xrd = $self->hostmeta('gmail.com');
   $xrd = $self->hostmeta('sojolicio.us' => ['hub']);
-  $xrd = $self->hostmeta('sojolicio.us', {'X-MyHeader' => 'Fun' } => ['hub']);
+  $xrd = $self->hostmeta('sojolicio.us', { 'X-MyHeader' => 'Fun' } => ['hub']);
   $xrd = $self->hostmeta('gmail.com', -secure);
 
   # Non blocking
@@ -366,8 +366,8 @@ If no host name is given, the local host-meta document is returned.
 If a host name is given, the corresponding host-meta document
 is retrieved from the host and returned.
 
-An additional array reference or L<Mojo::Headers> object can be used to pass header
-information for retrieval.
+An additional hash reference or a L<Mojo::Headers> object can be used
+to pass header information for retrieval.
 An additional array reference may limit the relations to be retrieved
 (see the L<WebFinger|http://tools.ietf.org/html/draft-ietf-appsawg-webfinger>
 specification for further explanation).
@@ -404,7 +404,7 @@ callback include the current controller object and the host's
 name.
 
 If a L<XML::Loy::XRD> document associated with the requested
-host name is returned (and optionally a L<Mojo::Headers) object),
+host name is returned (and optionally a L<Mojo::Headers> object),
 the retrieval will stop.
 
 The callback can be established with the
@@ -472,7 +472,7 @@ An L<endpoint|Mojolicious::Plugin::Util::Endpoint> called
 C<host-meta> is established.
 
 
-=head1 EXAMPLE
+=head1 EXAMPLES
 
 The C<examples/> folder contains a full working example application
 with serving and discovery.
