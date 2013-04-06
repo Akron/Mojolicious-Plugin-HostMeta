@@ -1,14 +1,13 @@
 package Mojolicious::Plugin::HostMeta;
 use Mojo::Base 'Mojolicious::Plugin';
 use Mojo::UserAgent;
+use Mojo::Headers;
 use Mojo::JSON;
 use Mojo::Util qw/quote/;
 use Mojo::IOLoop;
 
-# Todo:
-# - Add Acceptance for XRD and JRD and JSON as a header
 
-our $VERSION = 0.03;
+our $VERSION = 0.04;
 
 
 my $WK_PATH = '/.well-known/host-meta';
@@ -31,7 +30,7 @@ sub register {
 
   # Load Util-Endpoint/Callback if not already loaded
   foreach (qw/Endpoint Callback/) {
-    $mojo->plugin('Util::' . $_) unless exists $helpers->{lc $_};
+    $mojo->plugin("Util::$_") unless exists $helpers->{ lc $_ };
   };
 
   # Set callbacks on registration
@@ -48,8 +47,9 @@ sub register {
     $seconds = delete $param->{expires};
   };
 
+  # Create new hostmeta document
   my $hostmeta = $mojo->new_xrd;
-  $hostmeta->extension('XML::Loy::HostMeta');
+  $hostmeta->extension( -HostMeta );
 
   # Get host information on first request
   $mojo->hook(
@@ -59,7 +59,7 @@ sub register {
 	my $host = $c->req->url->to_abs->host;
 
 	# Add host-information to host-meta
-	$hostmeta->host($host) if $host;
+	$hostmeta->host( $host ) if $host;
       }
     );
 
@@ -75,15 +75,15 @@ sub register {
       if (!$_[0] || ref $_[0]) {
 
 	# Return local hostmeta
-	return _serve_hostmeta($c, $hostmeta, @_);
+	return _serve_hostmeta( $c, $hostmeta, @_ );
       };
 
       # Return discovered hostmeta
-      return _fetch_hostmeta($c, @_);
+      return _fetch_hostmeta( $c, @_ );
     });
 
   # Establish /.well-known/host-meta route
-  my $route = $mojo->routes->route($WK_PATH);
+  my $route = $mojo->routes->route( $WK_PATH );
 
   # Define endpoint
   $route->endpoint('host-meta');
@@ -103,15 +103,15 @@ sub register {
 	);
 
 	# Set expires element
-	$hostmeta->expires(time + $seconds);
+	$hostmeta->expires( time + $seconds );
 
 	# Set expires header
-	$headers->expires($hostmeta->expires);
+	$headers->expires( $hostmeta->expires );
       };
 
       # Serve host-meta document
       return $c->render_xrd(
-	_serve_hostmeta($c, $hostmeta)
+	_serve_hostmeta( $c, $hostmeta )
       );
     });
 };
@@ -119,8 +119,14 @@ sub register {
 
 # Get HostMeta document
 sub _fetch_hostmeta {
-  my $c = shift;
+  my $c    = shift;
   my $host = lc shift;
+
+  # Get headers
+  my $header = {};
+  if ($_[0] && ref $_[0] && ref($_[0]) eq 'HASH') {
+    $header = shift;
+  };
 
   # Check if security is forced
   my $secure = $_[-1] && $_[-1] eq '-secure' ? pop : 0;
@@ -136,144 +142,97 @@ sub _fetch_hostmeta {
 
   # Build relations parameter
   my $rel;
-  $rel = shift if $_[0] && ref $_[0] eq 'ARRAY';
+  $rel = shift if $_[0] && ref($_[0]) eq 'ARRAY';
 
   # Callback for caching
-  my $hostmeta_xrd = $c->callback(
+  my ($xrd, $headers) = $c->callback(
     hostmeta_fetch => $host
   );
 
   # HostMeta document was cached
-  if ($hostmeta_xrd) {
-    _filter_rel($hostmeta_xrd, $rel) if $rel;
+  if ($xrd) {
+
+    # Filter relations
+    $xrd = $xrd->filter_rel( $rel ) if $rel;
+
+    # Set headers to default
+    $headers ||= Mojo::Headers->new if $cb || wantarray;
 
     # Return cached hostmeta document
-    return $cb->($hostmeta_xrd) if $cb;
-    return $hostmeta_xrd;
+    return $cb->( $xrd, $headers ) if $cb;
+    return ( $xrd, $headers ) if wantarray;
+    return $xrd;
   };
 
   # Create host-meta path
-  my $host_hm_path = $host . $WK_PATH;
+  my $path = '//' . $host . $WK_PATH;
+  $path = 'https:' . $path if $secure;
 
-  # Get secure user agent
-  my $ua = Mojo::UserAgent->new(
-    name => $UA_NAME,
-    max_redirects => ($secure ? 0 : 3)
-  );
-
-  # Is blocking
-  unless ($cb) {
-
-    # Fetch Host-Meta XRD - first try ssl
-    my $tx = $ua->get('https://' . $host_hm_path);
-    my $host_hm;
-
-    # Transaction was not successful
-    return unless $host_hm = $tx->success;
-
-    unless ($host_hm->is_status_class(200)) {
-
-      # Only support secure retrieval
-      return if $secure;
-
-      # Update insecure max_redirects;
-      $ua->max_redirects(3);
-
-      # Then try insecure
-      $tx = $ua->get('http://' . $host_hm_path);
-
-      # Transaction was not successful
-      return unless $host_hm = $tx->success;
-
-      # Retrieval was successful
-      return unless $host_hm->is_status_class(200);
-    };
-
-    # Parse hostmeta document
-    return _parse_hostmeta($c, $host, $host_hm, $rel);
-  };
 
   # Non-blocking
-  # Create delay for https with or without redirection
-  my $delay = Mojo::IOLoop->delay(
-    sub {
-      my $delay = shift;
+  if ($cb) {
+    return $c->get_xrd(
+      $path => $header => sub {
+	my ($xrd, $headers) = @_;
+	if ($xrd) {
 
-      # Get with https - possibly without redirects
-      $ua->get('https://' . $host_hm_path => $delay->begin);
-    },
-    sub {
-      my $delay = shift;
-      my $tx = shift;
+	  # Add hostmeta extension
+	  $xrd->extension(-HostMeta);
 
-      # Get response
-      if (my $host_hm = $tx->success) {
-
-	# Fine
-	if ($host_hm->is_status_class(200)) {
-
-	  # Parse hostmeta document
-	  return $cb->(
-	    _parse_hostmeta($c, $host, $host_hm, $rel)
+	  # Hook for caching
+	  $c->app->plugins->emit_hook(
+	    after_fetching_hostmeta => (
+	      $c, $host, $xrd, $headers
+	    )
 	  );
+
+	  # Filter based on relations
+	  $xrd = $xrd->filter_rel( $rel ) if $rel;
+
+	  # Send to callback
+	  return $cb->( $xrd, $headers );
 	};
 
-	# Only support secure retrieval
-	return $cb->(undef) if $secure;
-      }
+	# Fail
+	return $cb->();
+      });
+  };
 
-      # Fail
-      else {
-	return $cb->(undef);
-      };
+  # Blocking
+  ($xrd, $headers) = $c->get_xrd( $path => $header );
 
-      # Try http with redirects
-      $delay->steps(
-	sub {
-	  my $delay = shift;
+  # No host-meta found
+  return unless $xrd;
 
-	  # Get with http and redirects
-	  $ua->max_redirects(3)
-	    ->get(
-	      'http://' . $host_hm_path =>
-		$delay->begin
-	      );
-	},
-	sub {
-	  my $delay = shift;
+  # Add hostmeta extension
+  $xrd->extension( -HostMeta );
 
-	  # Transaction was successful
-	  if (my $host_hm = pop->success) {
-
-	    # Retrieval was not successful
-	    if ($host_hm->is_status_class(200)) {
-
-	      # Parse hostmeta document
-	      return $cb->(
-		_parse_hostmeta($c, $host, $host_hm, $rel)
-	      );
-	    }
-	  };
-
-	  # Fail
-	  return $cb->(undef);
-	});
-    }
+  # Hook for caching
+  $c->app->plugins->emit_hook(
+    after_fetching_hostmeta => (
+      $c, $host, $xrd, $headers
+    )
   );
 
-  # Wait if IOLoop is not running
-  $delay->wait unless Mojo::IOLoop->is_running;
-  return;
+  # Filter based on relations
+  $xrd = $xrd->filter_rel( $rel ) if $rel;
+
+  # Return
+  return ($xrd, $headers) if wantarray;
+  return $xrd;
 };
 
 
 # Run hooks for preparation and serving of hostmeta
 sub _serve_hostmeta {
-  my $c = shift;
-  my $hostmeta = shift;
+  my $c   = shift;
+  my $xrd = shift;
 
   # Ignore security flag
   pop if $_[-1] && $_[-1] eq '-secure';
+
+  # Ignore header information
+  shift if $_[0] && ref($_[0]) && ref($_[0]) eq 'HASH';
 
   # Get callback
   my $cb = pop if ref($_[-1]) && ref($_[-1]) eq 'CODE';
@@ -287,7 +246,7 @@ sub _serve_hostmeta {
   if ($plugins->has_subscribers( $phm )) {
 
     # Emit hook for subscribers
-    $plugins->emit_hook($phm => ( $c, $hostmeta ));
+    $plugins->emit_hook( $phm => ( $c, $xrd ));
 
     # Unsubscribe all subscribers
     foreach (@{ $plugins->subscribers( $phm ) }) {
@@ -297,61 +256,30 @@ sub _serve_hostmeta {
 
   # No further modifications wanted
   unless ($plugins->has_subscribers('before_serving_hostmeta')) {
-    return $cb->($hostmeta) if $cb;
-    return $hostmeta;
+
+    # Filter relations
+    $xrd = $xrd->filter_rel( $rel ) if $rel;
+
+    # Return document
+    return $cb->( $xrd ) if $cb;
+    return $xrd;
   };
 
   # Clone hostmeta reference
-  my $hostmeta_clone = $c->new_xrd($hostmeta->to_xml);
+  $xrd = $c->new_xrd( $xrd->to_xml );
 
   # Emit 'before_serving_hostmeta' hook
   $plugins->emit_hook(
     before_serving_hostmeta => (
-      $c, $hostmeta_clone
+      $c, $xrd
     ));
 
   # Filter relations
-  _filter_rel($hostmeta_clone, $rel) if $rel;
+  $xrd = $xrd->filter_rel( $rel ) if $rel;
 
   # Return hostmeta clone
-  return $cb->($hostmeta_clone) if $cb;
-  return $hostmeta_clone;
-};
-
-
-# Filter link relations
-sub _filter_rel {
-  my ($xrd, $rel) = @_;
-  my @rel = ref $rel ? @$rel : split(/\s+/, $rel);
-
-  # Find unwanted link relations
-  $rel = 'Link:' . join(':', map { 'not([rel=' . quote($_) . '])'} @rel);
-
-  # Remove unwanted link relations
-  $xrd->find($rel)->pluck('remove');
-};
-
-
-# Parse hostmeta body
-sub _parse_hostmeta {
-  my ($c, $host, $host_hm, $rel) = @_;
-
-  # Parse XRD
-  my $hostmeta_xrd = $c->new_xrd($host_hm->body) or return;
-  $hostmeta_xrd->extension('XML::Loy::HostMeta');
-
-  # Hook for caching
-  $c->app->plugins->emit_hook(
-    after_fetching_hostmeta => (
-      $c, $host, $hostmeta_xrd, $host_hm->headers->clone
-    )
-  );
-
-  # Filter relations
-  _filter_rel($hostmeta_xrd, $rel) if $rel;
-
-  # Return XRD object
-  return $hostmeta_xrd;
+  return $cb->( $xrd ) if $cb;
+  return $xrd;
 };
 
 
@@ -421,10 +349,11 @@ as part of the configuration file with the key C<HostMeta>.
   my $xrd = $self->hostmeta;
   $xrd = $self->hostmeta('gmail.com');
   $xrd = $self->hostmeta('sojolicio.us' => ['hub']);
+  $xrd = $self->hostmeta('sojolicio.us', {'X-MyHeader' => 'Fun' } => ['hub']);
   $xrd = $self->hostmeta('gmail.com', -secure);
 
   # Non blocking
-  $self->hostmeta('gmail.com', ['hub'] => sub {
+  $self->hostmeta('gmail.com' => ['hub'] => sub {
     my $xrd = shift;
     # ...
   }, -secure);
@@ -437,6 +366,8 @@ If no host name is given, the local host-meta document is returned.
 If a host name is given, the corresponding host-meta document
 is retrieved from the host and returned.
 
+An additional array reference or L<Mojo::Headers> object can be used to pass header
+information for retrieval.
 An additional array reference may limit the relations to be retrieved
 (see the L<WebFinger|http://tools.ietf.org/html/draft-ietf-appsawg-webfinger>
 specification for further explanation).
@@ -457,11 +388,13 @@ last argument before the optional C<-secure> flag to the method.
     hostmeta_fetch => sub {
       my ($c, $host) = @_;
 
-      my $doc = $c->chi->get('hostmeta-' . $host);
+      my $doc = $c->chi->get("hostmeta-$host");
       return unless $doc;
 
+      my $header = $c->chi->get("hostmeta-$host-headers");
+
       # Return document
-      return $c->new_xrd($doc);
+      return ($c->new_xrd($doc), Mojo::Headers->new->parse($header));
     }
   );
 
@@ -471,7 +404,8 @@ callback include the current controller object and the host's
 name.
 
 If a L<XML::Loy::XRD> document associated with the requested
-host name is returned, the retrieval will stop.
+host name is returned (and optionally a L<Mojo::Headers) object),
+the retrieval will stop.
 
 The callback can be established with the
 L<callback|Mojolicious::Plugin::Util::Callback/callback>
@@ -485,8 +419,7 @@ This can be used for caching.
 =head2 prepare_hostmeta
 
   $mojo->hook(prepare_hostmeta => sub {
-    my $c = shift;
-    my $hostmeta = shift;
+    my ($c, $hostmeta) = @_;
     $hostmeta->link(permanent => '/perma.html');
   };
 
@@ -499,8 +432,7 @@ This hook is only emitted once for each subscriber.
 =head2 before_serving_hostmeta
 
   $mojo->hook('before_serving_hostmeta' => sub {
-    my $c = shift;
-    my $hostmeta = shift;
+    my ($c, $hostmeta) = @_;
     $hostmeta->link(lrdd => './well-known/host-meta');
   };
 
@@ -518,7 +450,9 @@ for each request.
       my ($c, $host, $xrd, $headers) = @_;
 
       # Store in cache
-      $c->chi->set('hostmeta-' . $host => $xrd->to_xml);
+      my $chi = $c->chi;
+      $chi->set("hostmeta-$host" => $xrd->to_xml);
+      $chi->set("hostmeta-$host-headers" => $headers->to_string);
     }
   );
 

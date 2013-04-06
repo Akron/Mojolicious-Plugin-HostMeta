@@ -204,7 +204,8 @@ $c->hostmeta(
     ok(!$xrd->link('salmon'), 'Link 7');
 });
 
-# Live tests
+pass('No life tests');
+
 done_testing;
 exit;
 
@@ -213,6 +214,7 @@ $c->hostmeta(
     my $xrd = shift;
     ok(!$xrd, 'Not found');
 });
+
 
 is($c->hostmeta('yahoo.com')->subject, 'yahoo.com', 'Title');
 ok(!$c->hostmeta('yahoo.com', -secure), 'Not found for secure');
@@ -246,6 +248,7 @@ $c->hostmeta(
 $c->hostmeta(
   'e14n.com' => ['lrdd'] => sub {
     my $xrd = shift;
+
     is($xrd->link('lrdd')->attrs('template'),
        'https://e14n.com/api/lrdd?resource={uri}',
        'Correct template');
