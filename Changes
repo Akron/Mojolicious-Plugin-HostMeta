@@ -1,3 +1,7 @@
+0.05 2013-04-07
+        - Fixed small bug in hostmeta preparation.
+	- Improved documentation.
+
 0.04 2013-04-06
         - Use get_xrd() method from
 	  Mojolicious::Plugin::XRD 0.04.

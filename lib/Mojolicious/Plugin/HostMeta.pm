@@ -7,7 +7,7 @@ use Mojo::Util qw/quote/;
 use Mojo::IOLoop;
 
 
-our $VERSION = 0.04;
+our $VERSION = 0.05;
 
 
 my $WK_PATH = '/.well-known/host-meta';
@@ -55,7 +55,7 @@ sub register {
   $mojo->hook(
     prepare_hostmeta =>
       sub {
-	my ($c, $xrd_ref) = @_;
+	my ($c, $hostmeta) = @_;
 	my $host = $c->req->url->to_abs->host;
 
 	# Add host-information to host-meta
@@ -298,7 +298,7 @@ Mojolicious::Plugin::HostMeta - Serve and Retrieve Host-Meta documents
 =head1 SYNOPSIS
 
   # Mojolicious
-  $self->plugin('HostMeta');
+  $app->plugin('HostMeta');
 
   # Mojolicious::Lite
   plugin 'HostMeta';
@@ -306,10 +306,10 @@ Mojolicious::Plugin::HostMeta - Serve and Retrieve Host-Meta documents
   # Serves XRD or JRD from /.well-known/host-meta
 
   # Blocking requests
-  print $self->hostmeta('gmail.com')->link('lrrd');
+  print $c->hostmeta('gmail.com')->link('lrrd');
 
   # Non-blocking requests
-  $self->hostmeta('gmail.com' => sub {
+  $c->hostmeta('gmail.com' => sub {
     print shift->link('lrrd');
   });
 
@@ -346,14 +346,14 @@ as part of the configuration file with the key C<HostMeta>.
 =head2 C<hostmeta>
 
   # In Controller:
-  my $xrd = $self->hostmeta;
-  $xrd = $self->hostmeta('gmail.com');
-  $xrd = $self->hostmeta('sojolicio.us' => ['hub']);
-  $xrd = $self->hostmeta('sojolicio.us', { 'X-MyHeader' => 'Fun' } => ['hub']);
-  $xrd = $self->hostmeta('gmail.com', -secure);
+  my $xrd = $c->hostmeta;
+  $xrd = $c->hostmeta('gmail.com');
+  $xrd = $c->hostmeta('sojolicio.us' => ['hub']);
+  $xrd = $c->hostmeta('sojolicio.us', { 'X-MyHeader' => 'Fun' } => ['hub']);
+  $xrd = $c->hostmeta('gmail.com', -secure);
 
   # Non blocking
-  $self->hostmeta('gmail.com' => ['hub'] => sub {
+  $c->hostmeta('gmail.com' => ['hub'] => sub {
     my $xrd = shift;
     # ...
   }, -secure);
