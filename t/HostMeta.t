@@ -209,6 +209,10 @@ pass('No life tests');
 done_testing;
 exit;
 
+is($c->hostmeta('mozilla.com')->link('lrdd')->attrs('template'),
+'http://webfinger.mozillalabs.com/webfinger.php?q={uri}',
+   'Found mozilla.org');
+
 $c->hostmeta(
   'undef', ['author'] => sub {
     my $xrd = shift;
@@ -255,7 +259,6 @@ $c->hostmeta(
     ok(!$xrd->link('registration_endpoint'),
        'no registration endpoint');
 });
-
 
 done_testing;
 exit;

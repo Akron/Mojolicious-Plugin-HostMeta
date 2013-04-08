@@ -11,7 +11,6 @@ our $VERSION = 0.05;
 
 
 my $WK_PATH = '/.well-known/host-meta';
-my $UA_NAME = __PACKAGE__ . ' v' . $VERSION;
 
 
 # Register plugin
