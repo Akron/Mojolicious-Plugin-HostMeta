@@ -1,6 +1,10 @@
-0.05 2013-04-07
+0.05 2013-04-08
         - Fixed small bug in hostmeta preparation.
 	- Improved documentation.
+	- Added live test.
+	⁻ Delete Useragent information.
+	- Deprecated hostmeta_fetch in favor of
+	  fetch_hostmeta.
 
 0.04 2013-04-06
         - Use get_xrd() method from

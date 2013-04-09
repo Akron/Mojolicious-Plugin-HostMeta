@@ -79,7 +79,7 @@ $t->get_ok('/.well-known/host-meta')
     ->element_exists('Host')->text_is(Host => $hm_host);
 
 $app->callback(
-  hostmeta_fetch => sub {
+  fetch_hostmeta => sub {
     my ($c, $host) = @_;
 
     if ($host eq 'example.org') {

@@ -64,7 +64,7 @@ hook after_fetching_hostmeta => sub {
 
 
 # Get from cache
-app->callback(hostmeta_fetch => sub {
+app->callback(fetch_hostmeta => sub {
   my ($c, $host) = @_;
 
   # Get from cache

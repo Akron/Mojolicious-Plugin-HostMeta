@@ -3,7 +3,7 @@ use Mojo::Base 'Mojolicious::Plugin';
 use Mojo::UserAgent;
 use Mojo::Headers;
 use Mojo::JSON;
-use Mojo::Util qw/quote/;
+use Mojo::Util qw/quote deprecated/;
 use Mojo::IOLoop;
 
 
@@ -32,13 +32,17 @@ sub register {
     $mojo->plugin("Util::$_") unless exists $helpers->{ lc $_ };
   };
 
-  # Set callbacks on registration
-  $mojo->callback(['hostmeta_fetch'] => $param);
-
   # Load XML if not already loaded
   unless (exists $helpers->{render_xrd}) {
     $mojo->plugin('XRD');
   };
+
+  # Set callbacks on registration
+  # !!! hostmeta_fetch is deprecated
+  $mojo->callback(
+    [qw/fetch_hostmeta hostmeta_fetch/],
+    $param
+  );
 
   # Get seconds to expiration
   my $seconds = (60 * 60 * 24 * 10);
@@ -145,8 +149,18 @@ sub _fetch_hostmeta {
 
   # Callback for caching
   my ($xrd, $headers) = $c->callback(
-    hostmeta_fetch => $host
+    fetch_hostmeta => $host
   );
+
+  # !!! Deprecated in 0.5
+  unless ($xrd) {
+    ($xrd, $headers) = $c->callback(
+      hostmeta_fetch => $host
+    );
+    if ($xrd) {
+      deprecated 'hostmeta_fetch is DEPRECATED in favor of fetch_hostmeta';
+    };
+  };
 
   # HostMeta document was cached
   if ($xrd) {
@@ -319,6 +333,7 @@ L<Mojolicious::Plugin::HostMeta> is a Mojolicious plugin to serve and
 request "well-known" L<Host-Meta|https://tools.ietf.org/html/rfc6415>
 documents.
 
+B<This module is an early release! There may be significant changes in the future.>
 
 =head1 METHODS
 
@@ -380,11 +395,11 @@ last argument before the optional C<-secure> flag to the method.
 
 =head1 CALLBACKS
 
-=head2 hostmeta_fetch
+=head2 fetch_hostmeta
 
   # Establish a callback
   $mojo->callback(
-    hostmeta_fetch => sub {
+    fetch_hostmeta => sub {
       my ($c, $host) = @_;
 
       my $doc = $c->chi->get("hostmeta-$host");
@@ -411,6 +426,8 @@ L<callback|Mojolicious::Plugin::Util::Callback/callback>
 helper or on registration.
 
 This can be used for caching.
+
+The callback C<hostmeta_fetch> is deprecated.
 
 
 =head1 HOOKS
@@ -501,6 +518,8 @@ L<Mojolicious::Plugin::XRD>.
 =head1 AVAILABILITY
 
   https://github.com/Akron/Mojolicious-Plugin-HostMeta
+
+This plugin is part of the L<Sojolicious|http://sojolicio.us> project.
 
 
 =head1 COPYRIGHT AND LICENSE
