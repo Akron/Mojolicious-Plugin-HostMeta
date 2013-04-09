@@ -7,7 +7,7 @@ use Mojo::Util qw/quote deprecated/;
 use Mojo::IOLoop;
 
 
-our $VERSION = 0.05;
+our $VERSION = 0.06;
 
 
 my $WK_PATH = '/.well-known/host-meta';
@@ -305,7 +305,7 @@ __END__
 
 =head1 NAME
 
-Mojolicious::Plugin::HostMeta - Serve and Retrieve Host-Meta documents
+Mojolicious::Plugin::HostMeta - Serve and Retrieve Host-Meta Documents
 
 
 =head1 SYNOPSIS
