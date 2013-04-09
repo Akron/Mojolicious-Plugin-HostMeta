@@ -30,6 +30,7 @@ L<Mojolicious::Plugin::HostMeta> is a Mojolicious plugin to serve and
 request "well-known" L<Host-Meta|https://tools.ietf.org/html/rfc6415>
 documents.
 
+B<This module is an early release! There may be significant changes in the future.>
 
 =head1 METHODS
 
@@ -91,11 +92,11 @@ last argument before the optional C<-secure> flag to the method.
 
 =head1 CALLBACKS
 
-=head2 hostmeta_fetch
+=head2 fetch_hostmeta
 
   # Establish a callback
   $mojo->callback(
-    hostmeta_fetch => sub {
+    fetch_hostmeta => sub {
       my ($c, $host) = @_;
 
       my $doc = $c->chi->get("hostmeta-$host");
@@ -122,6 +123,8 @@ L<callback|Mojolicious::Plugin::Util::Callback/callback>
 helper or on registration.
 
 This can be used for caching.
+
+The callback C<hostmeta_fetch> is deprecated.
 
 
 =head1 HOOKS
@@ -212,6 +215,8 @@ L<Mojolicious::Plugin::XRD>.
 =head1 AVAILABILITY
 
   https://github.com/Akron/Mojolicious-Plugin-HostMeta
+
+This plugin is part of the L<Sojolicious|http://sojolicio.us> project.
 
 
 =head1 COPYRIGHT AND LICENSE
