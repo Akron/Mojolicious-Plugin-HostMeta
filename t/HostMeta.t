@@ -230,6 +230,11 @@ $c->hostmeta(
 
 $c->hostmeta(
   'yahoo.com' => sub {
+    ok($_[0], 'Secure');
+  } => undef);
+
+$c->hostmeta(
+  'yahoo.com' => sub {
     my $xrd = shift;
     is($xrd->link('hub')->attrs('href'),
        'http://yhub.yahoo.com',

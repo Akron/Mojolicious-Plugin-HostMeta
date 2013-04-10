@@ -1,5 +1,6 @@
-0.06 2013-04-10
+0.06 2013-04-11
         - Update title.
+	- Fixed bug in flag handling.
 
 0.05 2013-04-08
         - Fixed small bug in hostmeta preparation.

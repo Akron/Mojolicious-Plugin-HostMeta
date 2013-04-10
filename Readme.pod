@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-Mojolicious::Plugin::HostMeta - Serve and Retrieve Host-Meta documents
+Mojolicious::Plugin::HostMeta - Serve and Retrieve Host-Meta Documents
 
 
 =head1 SYNOPSIS
