@@ -23,10 +23,12 @@ use lib '../lib';
 
 plugin 'HostMeta';
 
+
 # Default varianles
 app->defaults(
   title => 'HostMeta Demo'
 );
+
 
 # Prepare a link
 hook prepare_hostmeta => sub {
@@ -84,8 +86,10 @@ post '/' => sub {
     });
 };
 
+
 # Start application
 app->start;
+
 
 __DATA__
 

@@ -1,3 +1,10 @@
+0.08 2013-04-12
+        - Fixed documentation style.
+	- Warned for callbacks.
+
+0.07 2013-04-12
+        - Update dependency for XRD ordering bug.
+
 0.06 2013-04-11
         - Update title.
 	- Fixed bug in flag handling.

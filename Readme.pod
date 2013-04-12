@@ -132,8 +132,8 @@ The callback C<hostmeta_fetch> is deprecated.
 =head2 prepare_hostmeta
 
   $mojo->hook(prepare_hostmeta => sub {
-    my ($c, $hostmeta) = @_;
-    $hostmeta->link(permanent => '/perma.html');
+    my ($c, $xrd) = @_;
+    $xrd->link(permanent => '/perma.html');
   };
 
 This hook is run when the host's own host-meta document is
@@ -145,8 +145,8 @@ This hook is only emitted once for each subscriber.
 =head2 before_serving_hostmeta
 
   $mojo->hook('before_serving_hostmeta' => sub {
-    my ($c, $hostmeta) = @_;
-    $hostmeta->link(lrdd => './well-known/host-meta');
+    my ($c, $xrd) = @_;
+    $xrd->link(lrdd => './well-known/host-meta');
   };
 
 This hook is run before the host's own host-meta document is
@@ -210,12 +210,6 @@ L<Mojolicious> (best with SSL support),
 L<Mojolicious::Plugin::Util::Endpoint>,
 L<Mojolicious::Plugin::Util::Callback>,
 L<Mojolicious::Plugin::XRD>.
-
-
-=head1 KNOWN BUGS AND LIMITATIONS
-
-The sequence order of the XRD is currently not correct.
-This will soon be fixed in L<XML::Loy::XRD>.
 
 
 =head1 AVAILABILITY

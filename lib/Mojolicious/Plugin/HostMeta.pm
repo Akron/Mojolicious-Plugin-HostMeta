@@ -4,7 +4,7 @@ use Mojo::Headers;
 use Mojo::Util qw/quote deprecated/;
 
 
-our $VERSION = 0.06;
+our $VERSION = 0.08;
 
 
 my $WK_PATH = '/.well-known/host-meta';
@@ -334,7 +334,7 @@ B<This module is an early release! There may be significant changes in the futur
 
 =head1 METHODS
 
-=head2 C<register>
+=head2 register
 
   # Mojolicious
   $app->plugin(HostMeta => {
@@ -354,7 +354,7 @@ as part of the configuration file with the key C<HostMeta>.
 
 =head1 HELPERS
 
-=head2 C<hostmeta>
+=head2 hostmeta
 
   # In Controller:
   my $xrd = $c->hostmeta;
@@ -425,6 +425,7 @@ helper or on registration.
 This can be used for caching.
 
 The callback C<hostmeta_fetch> is deprecated.
+Callbacks may be changed for non-blocking requests.
 
 
 =head1 HOOKS
@@ -432,8 +433,8 @@ The callback C<hostmeta_fetch> is deprecated.
 =head2 prepare_hostmeta
 
   $mojo->hook(prepare_hostmeta => sub {
-    my ($c, $hostmeta) = @_;
-    $hostmeta->link(permanent => '/perma.html');
+    my ($c, $xrd) = @_;
+    $xrd->link(permanent => '/perma.html');
   };
 
 This hook is run when the host's own host-meta document is
@@ -445,8 +446,8 @@ This hook is only emitted once for each subscriber.
 =head2 before_serving_hostmeta
 
   $mojo->hook('before_serving_hostmeta' => sub {
-    my ($c, $hostmeta) = @_;
-    $hostmeta->link(lrdd => './well-known/host-meta');
+    my ($c, $xrd) = @_;
+    $xrd->link(lrdd => './well-known/host-meta');
   };
 
 This hook is run before the host's own host-meta document is
@@ -510,12 +511,6 @@ L<Mojolicious> (best with SSL support),
 L<Mojolicious::Plugin::Util::Endpoint>,
 L<Mojolicious::Plugin::Util::Callback>,
 L<Mojolicious::Plugin::XRD>.
-
-
-=head1 KNOWN BUGS AND LIMITATIONS
-
-The sequence order of the XRD is currently not correct.
-This will soon be fixed in L<XML::Loy::XRD>.
 
 
 =head1 AVAILABILITY

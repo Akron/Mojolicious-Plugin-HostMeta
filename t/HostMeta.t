@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 use strict;
 use warnings;
 use lib ('lib', '../lib');
@@ -135,6 +135,12 @@ $app->hook(
 ok($xrd = $c->hostmeta, 'Get local hostmeta');
 
 ok($xrd->expires, 'Expires exists');
+
+ok(my $xrdr = $xrd->at('*'), 'Get root');
+is($xrdr->children->[0]->type, 'hm:Host', 'Get host');
+is($xrdr->children->[1]->type, 'Expires', 'Get Expires');
+is($xrdr->children->[2]->type, 'Property', 'Get Property');
+
 ok($xrd->at('Expires')->remove, 'Removed Expires');
 
 is_deeply(
