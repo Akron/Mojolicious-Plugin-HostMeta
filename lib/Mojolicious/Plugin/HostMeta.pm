@@ -1,10 +1,7 @@
 package Mojolicious::Plugin::HostMeta;
 use Mojo::Base 'Mojolicious::Plugin';
-use Mojo::UserAgent;
 use Mojo::Headers;
-use Mojo::JSON;
 use Mojo::Util qw/quote deprecated/;
-use Mojo::IOLoop;
 
 
 our $VERSION = 0.06;
@@ -513,6 +510,12 @@ L<Mojolicious> (best with SSL support),
 L<Mojolicious::Plugin::Util::Endpoint>,
 L<Mojolicious::Plugin::Util::Callback>,
 L<Mojolicious::Plugin::XRD>.
+
+
+=head1 KNOWN BUGS AND LIMITATIONS
+
+The sequence order of the XRD is currently not correct.
+This will soon be fixed in L<XML::Loy::XRD>.
 
 
 =head1 AVAILABILITY

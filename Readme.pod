@@ -212,6 +212,12 @@ L<Mojolicious::Plugin::Util::Callback>,
 L<Mojolicious::Plugin::XRD>.
 
 
+=head1 KNOWN BUGS AND LIMITATIONS
+
+The sequence order of the XRD is currently not correct.
+This will soon be fixed in L<XML::Loy::XRD>.
+
+
 =head1 AVAILABILITY
 
   https://github.com/Akron/Mojolicious-Plugin-HostMeta

@@ -36,7 +36,10 @@ app->defaults(
 # Cache helper
 app->helper(
   cache => sub {
-    state $cache = CHI->new( driver => 'File', root_dir => app->home->to_string );
+    state $cache = CHI->new(
+      driver   => 'File',
+      root_dir => app->home->to_string
+    );
     return $cache;
   });
 
