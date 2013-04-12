@@ -21,6 +21,9 @@
 use Mojolicious::Lite;
 use lib '../lib';
 
+use Carp 'verbose';
+$SIG{ __DIE__ } = sub { Carp::confess( @_ ) };
+
 plugin 'HostMeta';
 
 
@@ -47,10 +50,14 @@ hook before_serving_hostmeta => sub {
 # Index page
 get '/' => sub {
   my $c = shift;
+  my $host = $c->param('host');
+
   $c->hostmeta(
-    sub {
+    $host => sub {
       my $xrd = shift;
-      $c->stash(xrd => $xrd->to_pretty_xml) unless $c->param('host');
+warn '++++: ' . $xrd . $c . $c->req;
+      $c->stash(xrd => $xrd->to_pretty_xml);
+
       $c->render(template => 'index');
     }
   );
@@ -66,6 +73,8 @@ post '/' => sub {
   $c->hostmeta(
     $host => sub {
       my $hm = shift;
+
+warn '++1++';
 
       if ($hm) {
 	# Check formatting
