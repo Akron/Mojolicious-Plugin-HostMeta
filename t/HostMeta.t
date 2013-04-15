@@ -211,7 +211,6 @@ $c->hostmeta(
 });
 
 pass('No life tests');
-
 done_testing;
 exit;
 
@@ -270,6 +269,20 @@ $c->hostmeta(
     ok(!$xrd->link('registration_endpoint'),
        'no registration endpoint');
 });
+
+get '/get-hostmeta' => sub {
+  my $c = shift;
+  my $uri = $c->param('uri');
+  $c->hostmeta(
+    $uri => sub {
+      my $xrd = shift;
+      diag 'Non-blocking request';
+      $c->render_xrd($xrd);
+    }
+  );
+};
+
+$t->get_ok('/get-hostmeta?uri=gmail.com')->status_is(200)->text_is('Link[rel=lrdd] Title', 'Resource Descriptor');
 
 done_testing;
 exit;

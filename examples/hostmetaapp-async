@@ -22,10 +22,8 @@ use Mojolicious::Lite;
 use lib '../lib';
 
 use Carp 'verbose';
-$SIG{ __DIE__ } = sub { Carp::confess( @_ ) };
 
 plugin 'HostMeta';
-
 
 # Default varianles
 app->defaults(
@@ -52,13 +50,12 @@ get '/' => sub {
   my $c = shift;
   my $host = $c->param('host');
 
-  $c->hostmeta(
+  $c->render_later;
+  return $c->hostmeta(
     $host => sub {
       my $xrd = shift;
-warn '++++: ' . $xrd . $c . $c->req;
-      $c->stash(xrd => $xrd->to_pretty_xml);
-
-      $c->render(template => 'index');
+      $c->stash(xrd => $xrd->to_pretty_xml) if $xrd;
+      return $c->render(template => 'index');
     }
   );
 } => 'index';
@@ -69,16 +66,18 @@ post '/' => sub {
   my $c = shift;
   my $host = $c->param('host');
 
+  $c->render_later;
+
   # Discovery
   $c->hostmeta(
     $host => sub {
       my $hm = shift;
 
-warn '++1++';
-
       if ($hm) {
 	# Check formatting
-	my $rv = $c->param('submit') && $c->param('submit') eq 'json' ? $hm->to_json : $hm->to_pretty_xml;
+	my $rv =
+	  ($c->param('submit') && $c->param('submit') eq 'json') ?
+	    $hm->to_json : $hm->to_pretty_xml;
 	$c->flash(xrd => $rv ) if $hm;
       }
 
