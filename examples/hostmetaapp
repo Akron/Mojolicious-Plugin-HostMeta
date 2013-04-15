@@ -22,7 +22,7 @@
 #
 
 use Mojolicious::Lite;
-use lib '../lib';
+use lib 'lib', '../lib';
 
 use CHI;
 
@@ -89,7 +89,8 @@ app->callback(fetch_hostmeta => sub {
 # Index page
 get '/' => sub {
   my $c = shift;
-  $c->stash(xrd => $c->hostmeta->to_pretty_xml) unless $c->param('host');
+  my $host = $c->param('host');
+  $c->stash(xrd => $c->hostmeta($host)->to_pretty_xml);
   $c->render(template => 'index');
 } => 'index';
 
@@ -103,8 +104,9 @@ post '/' => sub {
   if (my $hm = $c->hostmeta($host)) {
 
     # Check formatting
-    my $rv = $c->param('submit') && $c->param('submit') eq 'json' ? $hm->to_json : $hm->to_pretty_xml;
-    $c->flash(xrd => $rv ) if $hm;
+    my $rv = ($c->param('submit') && $c->param('submit') eq 'json') ?
+      $hm->to_json : $hm->to_pretty_xml;
+    $c->flash(xrd => $rv);
   }
 
   # Hostmeta was not found

@@ -273,10 +273,10 @@ $c->hostmeta(
 get '/get-hostmeta' => sub {
   my $c = shift;
   my $uri = $c->param('uri');
+  $c->render_later;
   $c->hostmeta(
     $uri => sub {
       my $xrd = shift;
-      diag 'Non-blocking request';
       $c->render_xrd($xrd);
     }
   );

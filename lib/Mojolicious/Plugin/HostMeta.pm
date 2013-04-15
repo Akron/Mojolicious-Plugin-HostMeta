@@ -4,7 +4,7 @@ use Mojo::Headers;
 use Mojo::Util qw/quote deprecated/;
 
 
-our $VERSION = 0.08;
+our $VERSION = 0.10;
 
 
 my $WK_PATH = '/.well-known/host-meta';
@@ -122,6 +122,9 @@ sub _fetch_hostmeta {
   my $c    = shift;
   my $host = lc shift;
 
+  # Trim tail
+  pop while @_ && !defined $_[-1];
+
   # Get headers
   my $header = {};
   if ($_[0] && ref $_[0] && ref($_[0]) eq 'HASH') {
@@ -237,6 +240,9 @@ sub _fetch_hostmeta {
 sub _serve_hostmeta {
   my $c   = shift;
   my $xrd = shift;
+
+  # Delete tail
+  pop while @_ && !defined $_[-1];
 
   # Ignore security flag
   pop if defined $_[-1] && $_[-1] eq '-secure';

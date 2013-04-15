@@ -1,3 +1,9 @@
+0.10 2013-04-15
+        - Trim tail of undefined values.
+
+0.09 2013-04-15
+        - Fixed bug in both example apps.
+
 0.08 2013-04-15
         - Fixed documentation style.
 	- Warned for callbacks.

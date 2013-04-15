@@ -19,7 +19,7 @@
 #
 
 use Mojolicious::Lite;
-use lib '../lib';
+use lib 'lib', '../lib';
 
 use Carp 'verbose';
 
