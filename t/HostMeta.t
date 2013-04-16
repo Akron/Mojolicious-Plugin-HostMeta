@@ -214,28 +214,49 @@ pass('No life tests');
 done_testing;
 exit;
 
+my $lt = 0;
+
+$c->hostmeta(
+  'rstat.us' => sub {
+    my $xrd = shift;
+    is($xrd->link('lrdd')->attrs('template'),
+    'https://rstat.us/users/{uri}/xrd.xml',
+      'RStatus resource');
+    $lt++;
+});
+
+
+
 is($c->hostmeta('mozilla.com')->link('lrdd')->attrs('template'),
 'http://webfinger.mozillalabs.com/webfinger.php?q={uri}',
    'Found mozilla.org');
+$lt++;
+
 
 $c->hostmeta(
   'undef', ['author'] => sub {
     my $xrd = shift;
     ok(!$xrd, 'Not found');
+    $lt++;
 });
 
 
 is($c->hostmeta('yahoo.com')->subject, 'yahoo.com', 'Title');
+$lt++;
+
 ok(!$c->hostmeta('yahoo.com', -secure), 'Not found for secure');
+$lt++;
 
 $c->hostmeta(
   'yahoo.com' => sub {
     ok(!$_[0], 'Insecure');
+    $lt++;
   } => -secure);
 
 $c->hostmeta(
   'yahoo.com' => sub {
     ok($_[0], 'Secure');
+    $lt++;
   } => undef);
 
 $c->hostmeta(
@@ -245,6 +266,7 @@ $c->hostmeta(
        'http://yhub.yahoo.com',
        'Correct template');
     is($xrd->subject, 'yahoo.com', 'Title');
+    $lt+=2;
   });
 
 $c->hostmeta(
@@ -257,6 +279,7 @@ $c->hostmeta(
     is($xrd->link('registration_endpoint')->attrs('href'),
        'https://e14n.com/api/client/register',
        'Correct template');
+    $lt+=2;
 });
 
 $c->hostmeta(
@@ -268,7 +291,10 @@ $c->hostmeta(
        'Correct template');
     ok(!$xrd->link('registration_endpoint'),
        'no registration endpoint');
+    $lt+=2;
 });
+
+is($lt, 13 , 'Livetest count is valid');
 
 get '/get-hostmeta' => sub {
   my $c = shift;
@@ -281,6 +307,7 @@ get '/get-hostmeta' => sub {
     }
   );
 };
+
 
 $t->get_ok('/get-hostmeta?uri=gmail.com')->status_is(200)->text_is('Link[rel=lrdd] Title', 'Resource Descriptor');
 
