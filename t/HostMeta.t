@@ -93,9 +93,9 @@ $app->callback(
 my $xrd = $t->app->hostmeta('example.org');
 ok(!$xrd->property, 'Property not found.');
 ok(!$xrd->property('bar'), 'Property not found.');
-is($xrd->at('Link')->attrs('rel'), 'bar', 'Correct link');
+is($xrd->at('Link')->attr('rel'), 'bar', 'Correct link');
 ok(!$xrd->link, 'Empty Link request');
-is($xrd->link('bar')->attrs('href'), 'foo', 'Correct link');
+is($xrd->link('bar')->attr('href'), 'foo', 'Correct link');
 
 my ($test1, $test2) = (1,1);
 $app->hook(
@@ -174,7 +174,7 @@ ok($xrd = $c->hostmeta, 'Get local HostMeta');
 is($xrd->property('permanentcheck')->text, 1, 'Property 1');
 is($xrd->property('foo')->text, 'bar', 'Property 2');
 is($xrd->property('check')->text, 7, 'Property 3');
-is($xrd->link('salmon')->attrs('href'), 'http://www.sojolicio.us/', 'Link 1');
+is($xrd->link('salmon')->attr('href'), 'http://www.sojolicio.us/', 'Link 1');
 ok(!$xrd->link('author'), 'Link 2');
 
 ok($xrd = $c->hostmeta(['author']), 'Get local HostMeta');
@@ -190,7 +190,7 @@ $c->hostmeta(
     my $xrd = shift;
     is($xrd->property('permanentcheck')->text, 1, 'Property 7');
     is($xrd->property('check')->text, 9, 'Property 8');
-    is($xrd->link('salmon')->attrs('href'),
+    is($xrd->link('salmon')->attr('href'),
        'http://www.sojolicio.us/', 'Link 5');
 });
 
@@ -219,7 +219,7 @@ my $lt = 0;
 $c->hostmeta(
   'rstat.us' => sub {
     my $xrd = shift;
-    is($xrd->link('lrdd')->attrs('template'),
+    is($xrd->link('lrdd')->attr('template'),
     'https://rstat.us/users/{uri}/xrd.xml',
       'RStatus resource');
     $lt++;
@@ -227,7 +227,7 @@ $c->hostmeta(
 
 
 
-is($c->hostmeta('mozilla.com')->link('lrdd')->attrs('template'),
+is($c->hostmeta('mozilla.com')->link('lrdd')->attr('template'),
 'http://webfinger.mozillalabs.com/webfinger.php?q={uri}',
    'Found mozilla.org');
 $lt++;
@@ -262,7 +262,7 @@ $c->hostmeta(
 $c->hostmeta(
   'yahoo.com' => sub {
     my $xrd = shift;
-    is($xrd->link('hub')->attrs('href'),
+    is($xrd->link('hub')->attr('href'),
        'http://yhub.yahoo.com',
        'Correct template');
     is($xrd->subject, 'yahoo.com', 'Title');
@@ -272,11 +272,11 @@ $c->hostmeta(
 $c->hostmeta(
   'e14n.com' => sub {
     my $xrd = shift;
-    is($xrd->link('lrdd')->attrs('template'),
+    is($xrd->link('lrdd')->attr('template'),
        'https://e14n.com/api/lrdd?resource={uri}',
        'Correct template');
 
-    is($xrd->link('registration_endpoint')->attrs('href'),
+    is($xrd->link('registration_endpoint')->attr('href'),
        'https://e14n.com/api/client/register',
        'Correct template');
     $lt+=2;
@@ -286,7 +286,7 @@ $c->hostmeta(
   'e14n.com' => ['lrdd'] => sub {
     my $xrd = shift;
 
-    is($xrd->link('lrdd')->attrs('template'),
+    is($xrd->link('lrdd')->attr('template'),
        'https://e14n.com/api/lrdd?resource={uri}',
        'Correct template');
     ok(!$xrd->link('registration_endpoint'),

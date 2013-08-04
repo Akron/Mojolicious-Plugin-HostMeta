@@ -4,7 +4,7 @@ use Mojo::Headers;
 use Mojo::Util qw/quote deprecated/;
 
 
-our $VERSION = 0.10;
+our $VERSION = 0.11;
 
 
 my $WK_PATH = '/.well-known/host-meta';
