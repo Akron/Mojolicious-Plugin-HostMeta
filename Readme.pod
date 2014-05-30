@@ -124,7 +124,6 @@ helper or on registration.
 
 This can be used for caching.
 
-The callback C<hostmeta_fetch> is deprecated.
 Callbacks may be changed for non-blocking requests.
 
 
@@ -165,7 +164,7 @@ for each request.
 
       # Store in cache
       my $chi = $c->chi;
-      $chi->set("hostmeta-$host" => $xrd->to_xml);
+      $chi->set("hostmeta-$host" => $xrd->to_string);
       $chi->set("hostmeta-$host-headers" => $headers->to_string);
     }
   );
@@ -222,9 +221,9 @@ This plugin is part of the L<Sojolicious|http://sojolicio.us> project.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2011-2013, L<Nils Diewald|http://nils-diewald.de/>.
+Copyright (C) 2011-2014, L<Nils Diewald|http://nils-diewald.de/>.
 
 This program is free software, you can redistribute it
-and/or modify it under the same terms as Perl.
+and/or modify it under the terms of the Artistic License version 2.0.
 
 =cut
