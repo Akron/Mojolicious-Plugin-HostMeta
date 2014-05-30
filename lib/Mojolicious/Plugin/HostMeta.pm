@@ -4,7 +4,7 @@ use Mojo::Headers;
 use Mojo::Util qw/quote deprecated/;
 
 
-our $VERSION = 0.11;
+our $VERSION = 0.12;
 
 
 my $WK_PATH = '/.well-known/host-meta';
@@ -35,11 +35,7 @@ sub register {
   };
 
   # Set callbacks on registration
-  # !!! hostmeta_fetch is deprecated
-  $mojo->callback(
-    [qw/fetch_hostmeta hostmeta_fetch/],
-    $param
-  );
+  $mojo->callback(fetch_hostmeta => $param);
 
   # Get seconds to expiration
   my $seconds = (60 * 60 * 24 * 10);
@@ -151,16 +147,6 @@ sub _fetch_hostmeta {
   my ($xrd, $headers) = $c->callback(
     fetch_hostmeta => $host
   );
-
-  # !!! Deprecated in 0.5
-  unless ($xrd) {
-    ($xrd, $headers) = $c->callback(
-      hostmeta_fetch => $host
-    );
-    if ($xrd) {
-      deprecated 'hostmeta_fetch is DEPRECATED in favor of fetch_hostmeta';
-    };
-  };
 
   # HostMeta document was cached
   if ($xrd) {
@@ -282,7 +268,7 @@ sub _serve_hostmeta {
   };
 
   # Clone hostmeta reference
-  $xrd = $c->new_xrd( $xrd->to_xml );
+  $xrd = $c->new_xrd( $xrd->to_string );
 
   # Emit 'before_serving_hostmeta' hook
   $plugins->emit_hook(
@@ -430,7 +416,6 @@ helper or on registration.
 
 This can be used for caching.
 
-The callback C<hostmeta_fetch> is deprecated.
 Callbacks may be changed for non-blocking requests.
 
 
@@ -471,7 +456,7 @@ for each request.
 
       # Store in cache
       my $chi = $c->chi;
-      $chi->set("hostmeta-$host" => $xrd->to_xml);
+      $chi->set("hostmeta-$host" => $xrd->to_string);
       $chi->set("hostmeta-$host-headers" => $headers->to_string);
     }
   );
@@ -528,9 +513,9 @@ This plugin is part of the L<Sojolicious|http://sojolicio.us> project.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2011-2013, L<Nils Diewald|http://nils-diewald.de/>.
+Copyright (C) 2011-2014, L<Nils Diewald|http://nils-diewald.de/>.
 
 This program is free software, you can redistribute it
-and/or modify it under the same terms as Perl.
+and/or modify it under the terms of the Artistic License version 2.0.
 
 =cut
