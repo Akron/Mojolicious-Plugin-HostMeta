@@ -27,10 +27,8 @@ Mojolicious::Plugin::HostMeta - Serve and Retrieve Host-Meta Documents
 =head1 DESCRIPTION
 
 L<Mojolicious::Plugin::HostMeta> is a Mojolicious plugin to serve and
-request "well-known" L<Host-Meta|https://tools.ietf.org/html/rfc6415>
+request C<well-known> L<Host-Meta|https://tools.ietf.org/html/rfc6415>
 documents.
-
-B<This module is an early release! There may be significant changes in the future.>
 
 =head1 METHODS
 
@@ -48,8 +46,9 @@ Called when registering the plugin.
 Accepts one optional parameter C<expires>, which is the number
 of seconds the served host-meta should be cached by the fetching client.
 Defaults to 10 days.
-This parameter can be set either on registration or
-as part of the configuration file with the key C<HostMeta>.
+All parameters can be set either as part of the configuration
+file with the key C<HostMeta> or on registration
+(that can be overwritten by configuration).
 
 
 =head1 HELPERS
@@ -144,7 +143,7 @@ This hook is only emitted once for each subscriber.
 
 =head2 before_serving_hostmeta
 
-  $mojo->hook('before_serving_hostmeta' => sub {
+  $mojo->hook(before_serving_hostmeta => sub {
     my ($c, $xrd) = @_;
     $xrd->link(lrdd => './well-known/host-meta');
   };

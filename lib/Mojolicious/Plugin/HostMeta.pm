@@ -4,7 +4,7 @@ use Mojo::Headers;
 use Mojo::Util qw/quote deprecated/;
 
 
-our $VERSION = 0.12;
+our $VERSION = '0.13';
 
 
 my $WK_PATH = '/.well-known/host-meta';
@@ -18,7 +18,7 @@ sub register {
 
   # Load parameter from Config file
   if (my $config_param = $mojo->config('HostMeta')) {
-    $param = { %$config_param, %$param };
+    $param = { %$param, %$config_param };
   };
 
   # Get helpers object
@@ -106,7 +106,7 @@ sub register {
       };
 
       # Serve host-meta document
-      return $c->render_xrd(
+      return $c->helpers->render_xrd(
 	_serve_hostmeta( $c, $hostmeta )
       );
     });
@@ -143,8 +143,11 @@ sub _fetch_hostmeta {
   my $rel;
   $rel = shift if $_[0] && ref($_[0]) eq 'ARRAY';
 
+  # Helpers proxy
+  my $h = $c->helpers;
+
   # Callback for caching
-  my ($xrd, $headers) = $c->callback(
+  my ($xrd, $headers) = $h->callback(
     fetch_hostmeta => $host
   );
 
@@ -170,7 +173,7 @@ sub _fetch_hostmeta {
 
   # Non-blocking
   if ($cb) {
-    return $c->get_xrd(
+    return $h->get_xrd(
       $path => $header => sub {
 	my ($xrd, $headers) = @_;
 	if ($xrd) {
@@ -198,7 +201,7 @@ sub _fetch_hostmeta {
   };
 
   # Blocking
-  ($xrd, $headers) = $c->get_xrd( $path => $header );
+  ($xrd, $headers) = $h->get_xrd( $path => $header );
 
   # No host-meta found
   return unless $xrd;
@@ -268,7 +271,7 @@ sub _serve_hostmeta {
   };
 
   # Clone hostmeta reference
-  $xrd = $c->new_xrd( $xrd->to_string );
+  $xrd = $c->helpers->new_xrd( $xrd->to_string );
 
   # Emit 'before_serving_hostmeta' hook
   $plugins->emit_hook(
@@ -319,10 +322,8 @@ Mojolicious::Plugin::HostMeta - Serve and Retrieve Host-Meta Documents
 =head1 DESCRIPTION
 
 L<Mojolicious::Plugin::HostMeta> is a Mojolicious plugin to serve and
-request "well-known" L<Host-Meta|https://tools.ietf.org/html/rfc6415>
+request C<well-known> L<Host-Meta|https://tools.ietf.org/html/rfc6415>
 documents.
-
-B<This module is an early release! There may be significant changes in the future.>
 
 =head1 METHODS
 
@@ -340,8 +341,9 @@ Called when registering the plugin.
 Accepts one optional parameter C<expires>, which is the number
 of seconds the served host-meta should be cached by the fetching client.
 Defaults to 10 days.
-This parameter can be set either on registration or
-as part of the configuration file with the key C<HostMeta>.
+All parameters can be set either as part of the configuration
+file with the key C<HostMeta> or on registration
+(that can be overwritten by configuration).
 
 
 =head1 HELPERS
@@ -436,7 +438,7 @@ This hook is only emitted once for each subscriber.
 
 =head2 before_serving_hostmeta
 
-  $mojo->hook('before_serving_hostmeta' => sub {
+  $mojo->hook(before_serving_hostmeta => sub {
     my ($c, $xrd) = @_;
     $xrd->link(lrdd => './well-known/host-meta');
   };
