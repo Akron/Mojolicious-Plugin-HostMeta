@@ -1,3 +1,7 @@
+0.14 2014-10-10
+	- Improved test suite and docs for
+	  parallel requests.
+
 0.13 2014-08-18
 	- Update to Mojolicious 5.29.
         - Improved documentation.

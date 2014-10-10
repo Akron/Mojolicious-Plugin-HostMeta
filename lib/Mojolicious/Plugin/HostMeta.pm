@@ -4,38 +4,38 @@ use Mojo::Headers;
 use Mojo::Util qw/quote deprecated/;
 
 
-our $VERSION = '0.13';
+our $VERSION = '0.14';
 
 
-my $WK_PATH = '/.well-known/host-meta';
+our $WK_PATH = '/.well-known/host-meta';
 
 
 # Register plugin
 sub register {
-  my ($plugin, $mojo, $param) = @_;
+  my ($plugin, $app, $param) = @_;
 
   $param ||= {};
 
   # Load parameter from Config file
-  if (my $config_param = $mojo->config('HostMeta')) {
+  if (my $config_param = $app->config('HostMeta')) {
     $param = { %$param, %$config_param };
   };
 
   # Get helpers object
-  my $helpers = $mojo->renderer->helpers;
+  my $helpers = $app->renderer->helpers;
 
   # Load Util-Endpoint/Callback if not already loaded
   foreach (qw/Endpoint Callback/) {
-    $mojo->plugin("Util::$_") unless exists $helpers->{ lc $_ };
+    $app->plugin("Util::$_") unless exists $helpers->{ lc $_ };
   };
 
   # Load XML if not already loaded
   unless (exists $helpers->{render_xrd}) {
-    $mojo->plugin('XRD');
+    $app->plugin('XRD');
   };
 
   # Set callbacks on registration
-  $mojo->callback(fetch_hostmeta => $param);
+  $app->callback(fetch_hostmeta => $param);
 
   # Get seconds to expiration
   my $seconds = (60 * 60 * 24 * 10);
@@ -44,11 +44,11 @@ sub register {
   };
 
   # Create new hostmeta document
-  my $hostmeta = $mojo->new_xrd;
+  my $hostmeta = $app->new_xrd;
   $hostmeta->extension( -HostMeta );
 
   # Get host information on first request
-  $mojo->hook(
+  $app->hook(
     prepare_hostmeta =>
       sub {
 	my ($c, $hostmeta) = @_;
@@ -60,7 +60,7 @@ sub register {
     );
 
   # Establish 'hostmeta' helper
-  $mojo->helper(
+  $app->helper(
     hostmeta => sub {
       my $c = shift;
 
@@ -79,7 +79,7 @@ sub register {
     });
 
   # Establish /.well-known/host-meta route
-  my $route = $mojo->routes->route( $WK_PATH );
+  my $route = $app->routes->route( $WK_PATH );
 
   # Define endpoint
   $route->endpoint('host-meta');
@@ -382,6 +382,10 @@ only over C<https> without redirections.
 This method can be used in a blocking or non-blocking way.
 For non-blocking retrieval, pass a callback function as the
 last argument before the optional C<-secure> flag to the method.
+As the first passed response is the L<XML::Loy::XRD>
+document, you have to use an offset of C<0> in
+L<begin|Mojo::IOLoop::Delay/begin> for parallel requests using
+L<Mojo::IOLoop::Delay>.
 
 
 =head1 CALLBACKS
@@ -389,7 +393,7 @@ last argument before the optional C<-secure> flag to the method.
 =head2 fetch_hostmeta
 
   # Establish a callback
-  $mojo->callback(
+  $app->callback(
     fetch_hostmeta => sub {
       my ($c, $host) = @_;
 
@@ -425,7 +429,7 @@ Callbacks may be changed for non-blocking requests.
 
 =head2 prepare_hostmeta
 
-  $mojo->hook(prepare_hostmeta => sub {
+  $app->hook(prepare_hostmeta => sub {
     my ($c, $xrd) = @_;
     $xrd->link(permanent => '/perma.html');
   };
@@ -438,7 +442,7 @@ This hook is only emitted once for each subscriber.
 
 =head2 before_serving_hostmeta
 
-  $mojo->hook(before_serving_hostmeta => sub {
+  $app->hook(before_serving_hostmeta => sub {
     my ($c, $xrd) = @_;
     $xrd->link(lrdd => './well-known/host-meta');
   };
@@ -452,7 +456,7 @@ for each request.
 
 =head2 after_fetching_hostmeta
 
-  $mojo->hook(
+  $app->hook(
     after_fetching_hostmeta => sub {
       my ($c, $host, $xrd, $headers) = @_;
 

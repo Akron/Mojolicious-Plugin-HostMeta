@@ -87,6 +87,10 @@ only over C<https> without redirections.
 This method can be used in a blocking or non-blocking way.
 For non-blocking retrieval, pass a callback function as the
 last argument before the optional C<-secure> flag to the method.
+As the first passed response is the L<XML::Loy::XRD>
+document, you have to use an offset of C<0> in
+L<begin|Mojo::IOLoop::Delay/begin> for parallel requests using
+L<Mojo::IOLoop::Delay>.
 
 
 =head1 CALLBACKS
@@ -94,7 +98,7 @@ last argument before the optional C<-secure> flag to the method.
 =head2 fetch_hostmeta
 
   # Establish a callback
-  $mojo->callback(
+  $app->callback(
     fetch_hostmeta => sub {
       my ($c, $host) = @_;
 
@@ -130,7 +134,7 @@ Callbacks may be changed for non-blocking requests.
 
 =head2 prepare_hostmeta
 
-  $mojo->hook(prepare_hostmeta => sub {
+  $app->hook(prepare_hostmeta => sub {
     my ($c, $xrd) = @_;
     $xrd->link(permanent => '/perma.html');
   };
@@ -143,7 +147,7 @@ This hook is only emitted once for each subscriber.
 
 =head2 before_serving_hostmeta
 
-  $mojo->hook(before_serving_hostmeta => sub {
+  $app->hook(before_serving_hostmeta => sub {
     my ($c, $xrd) = @_;
     $xrd->link(lrdd => './well-known/host-meta');
   };
@@ -157,7 +161,7 @@ for each request.
 
 =head2 after_fetching_hostmeta
 
-  $mojo->hook(
+  $app->hook(
     after_fetching_hostmeta => sub {
       my ($c, $host, $xrd, $headers) = @_;
 
