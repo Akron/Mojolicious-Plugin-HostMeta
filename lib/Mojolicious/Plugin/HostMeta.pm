@@ -1,11 +1,9 @@
 package Mojolicious::Plugin::HostMeta;
 use Mojo::Base 'Mojolicious::Plugin';
 use Mojo::Headers;
-use Mojo::Util qw/quote deprecated/;
+use Mojo::Util qw/quote/;
 
-
-our $VERSION = '0.14';
-
+our $VERSION = '0.15';
 
 our $WK_PATH = '/.well-known/host-meta';
 

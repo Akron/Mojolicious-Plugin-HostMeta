@@ -1,3 +1,6 @@
+0.15 2014-10-15
+        - Fixed requirements in Makefile.
+
 0.14 2014-10-10
 	- Improved test suite and docs for
 	  parallel requests.
