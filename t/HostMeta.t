@@ -5,7 +5,7 @@ use lib ('lib', '../lib');
 
 use Test::More;
 use Test::Mojo;
-use Mojo::JSON;
+use Mojo::JSON qw(decode_json);
 use Mojolicious::Lite;
 
 my $hm_host = 'hostme.ta';
@@ -164,7 +164,7 @@ is($xrdr->children->[2]->type, 'Property', 'Get Property');
 ok($xrd->at('Expires')->remove, 'Removed Expires');
 
 is_deeply(
-  Mojo::JSON->new->decode($xrd->to_json),
+  decode_json($xrd->to_json),
   {"links" => [
     {"rel" => "salmon",
      "titles" => {
