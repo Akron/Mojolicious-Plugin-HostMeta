@@ -3,7 +3,7 @@ use Mojo::Base 'Mojolicious::Plugin';
 use Mojo::Headers;
 use Mojo::Util qw/quote/;
 
-our $VERSION = '0.15';
+our $VERSION = '0.17';
 
 our $WK_PATH = '/.well-known/host-meta';
 
@@ -171,6 +171,7 @@ sub _fetch_hostmeta {
 
   # Non-blocking
   if ($cb) {
+
     return $h->get_xrd(
       $path => $header => sub {
 	my ($xrd, $headers) = @_;
