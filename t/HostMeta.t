@@ -45,10 +45,9 @@ $app->callback(
     return;
   });
 
-my $c = Mojolicious::Controller->new;
 
 # Set request information globally
-$c->app($app);
+my $c = $app->build_controller;
 $c->req->url->base->parse('http://' . $hm_host);
 
 $app->hook(
@@ -162,9 +161,9 @@ ok($xrd = $c->hostmeta, 'Get local hostmeta');
 ok($xrd->expires, 'Expires exists');
 
 ok(my $xrdr = $xrd->at('*'), 'Get root');
-is($xrdr->children->[0]->type, 'hm:Host', 'Get host');
-is($xrdr->children->[1]->type, 'Expires', 'Get Expires');
-is($xrdr->children->[2]->type, 'Property', 'Get Property');
+is($xrdr->children->[0]->tag, 'hm:Host', 'Get host');
+is($xrdr->children->[1]->tag, 'Expires', 'Get Expires');
+is($xrdr->children->[2]->tag, 'Property', 'Get Property');
 
 ok($xrd->at('Expires')->remove, 'Removed Expires');
 

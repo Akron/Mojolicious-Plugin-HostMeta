@@ -1,3 +1,6 @@
+0.19 2015-04-23
+        - Updated for Mojolicious 6.0.
+
 0.18 2015-02-01
         - Fixed OO json in test (reneeb++).
 	- Updated dependency for XML::Loy.
