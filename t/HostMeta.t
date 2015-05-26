@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use lib ('lib', '../lib');
 
-use Test::More;
+use Test::More tests => 89;
 use Test::Mojo;
 use Mojo::JSON qw(decode_json);
 use Mojolicious::Lite;
@@ -186,7 +186,7 @@ is_deeply(
 
 $t->get_ok('/.well-known/host-meta.json')
     ->status_is(200)
-    ->content_type_is('application/json');
+    ->content_type_like(qr!^application/json!);
 
 # rel parameter
 $t->get_ok('/.well-known/host-meta?rel=author')

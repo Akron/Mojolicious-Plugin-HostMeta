@@ -14,9 +14,9 @@ WriteMakefile(
   },
   PREREQ_PM => {
     'Mojolicious' => 6.08,
-    'XML::Loy' => 0.35,
+    'XML::Loy' => 0.40,
     'Mojolicious::Plugin::XML::Loy' => 0.13,
-    'Mojolicious::Plugin::XRD' => 0.11,
+    'Mojolicious::Plugin::XRD' => 0.16,
     'Mojolicious::Plugin::Util::Endpoint' => 0.13,
     'Mojolicious::Plugin::Util::Callback' => 0.02
   },
