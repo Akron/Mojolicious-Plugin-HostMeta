@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use lib ('lib', '../lib');
 
-use Test::More tests => 89;
+use Test::More tests => 88;
 use Test::Mojo;
 use Mojo::JSON qw(decode_json);
 use Mojolicious::Lite;
@@ -17,7 +17,7 @@ get '/get-hostmeta' => sub {
   $c->hostmeta(
     $uri => sub {
       my $xrd = shift;
-      $c->render_xrd($xrd);
+      $c->reply->xrd($xrd);
     }
   );
 };
@@ -65,8 +65,7 @@ $t->get_ok('/get-hostmeta?uri=check.com')
 my $h = $app->renderer->helpers;
 
 # XRD
-ok($h->{new_xrd}, 'render_xrd fine.');
-ok($h->{render_xrd}, 'render_xrd fine.');
+ok($h->{new_xrd}, 'new_xrd fine.');
 
 # Util::Endpoint
 ok($h->{endpoint}, 'endpoint fine.');
@@ -235,7 +234,7 @@ $c->hostmeta(
 });
 
 pass('No life tests');
-done_testing(89);
+done_testing(88);
 exit;
 
 $c->hostmeta(
@@ -333,5 +332,5 @@ $c->delay(
   }
 );
 
-done_testing(106);
+done_testing(105);
 __END__

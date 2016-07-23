@@ -3,7 +3,7 @@ use Mojo::Base 'Mojolicious::Plugin';
 use Mojo::Headers;
 use Mojo::Util qw/quote/;
 
-our $VERSION = '0.20';
+our $VERSION = '0.21';
 
 our $WK_PATH = '/.well-known/host-meta';
 
@@ -28,7 +28,7 @@ sub register {
   };
 
   # Load XML if not already loaded
-  unless (exists $helpers->{render_xrd}) {
+  unless (exists $helpers->{new_xrd}) {
     $app->plugin('XRD');
   };
 
@@ -104,7 +104,7 @@ sub register {
       };
 
       # Serve host-meta document
-      return $c->helpers->render_xrd(
+      return $c->helpers->reply->xrd(
 	_serve_hostmeta( $c, $hostmeta )
       );
     });
@@ -518,7 +518,7 @@ This plugin is part of the L<Sojolicious|http://sojolicio.us> project.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2011-2015, L<Nils Diewald|http://nils-diewald.de/>.
+Copyright (C) 2011-2016, L<Nils Diewald|http://nils-diewald.de/>.
 
 This program is free software, you can redistribute it
 and/or modify it under the terms of the Artistic License version 2.0.
