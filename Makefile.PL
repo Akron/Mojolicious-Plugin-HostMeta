@@ -14,20 +14,29 @@ WriteMakefile(
   },
   PREREQ_PM => {
     'Mojolicious' => 6.08,
-    'XML::Loy' => 0.40,
+    'XML::Loy' => 0.43,
     'Mojolicious::Plugin::XML::Loy' => 0.13,
     'Mojolicious::Plugin::XRD' => 0.17,
     'Mojolicious::Plugin::Util::Endpoint' => 0.13,
     'Mojolicious::Plugin::Util::Callback' => 0.02
   },
   LICENSE      => 'artistic_2',
-  META_MERGE   => {
+  (eval { ExtUtils::MakeMaker->VERSION(6.46) } ? (META_MERGE => {
+    'meta-spec' => { version => 2 },
     requires  => { perl => '5.010001' },
     resources => {
       license     => 'http://www.opensource.org/licenses/artistic-license-2.0',
-      repository  => 'https://github.com/Akron/Mojolicious-Plugin-HostMeta'
+      repository  => {
+        type => 'git',
+        web => 'https://github.com/Akron/Mojolicious-Plugin-HostMeta',
+        url => 'https://github.com/Akron/Mojolicious-Plugin-HostMeta.git',
+      },
+      bugtracker  => {
+        web => 'https://github.com/Akron/Mojolicious-Plugin-HostMeta/issues',
+      },
     }
-  },
+  }) : (),
+  ),
   MIN_PERL_VERSION => '5.010001',
   test => {TESTS => 't/*.t'}
 );
