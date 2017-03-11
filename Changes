@@ -1,3 +1,6 @@
+0.23 2017-03-11
+        - Fixed test for updated Mojo::URL.
+
 0.22 2016-09-09
         - Update for Kwalitee compliance.
 

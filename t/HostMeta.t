@@ -37,7 +37,7 @@ $app->callback(
     }
     elsif ($host eq 'check.com') {
       $xrd->link(lrdd => {
-	template => 'https://profiles.google.com/_/webfinger/?q={uri}'
+        template => 'https://profiles.google.com/_/webfinger/?q={uri}'
       })->add(Title => 'Resource Descriptor');
 
       return $xrd;
@@ -55,7 +55,7 @@ $app->hook(
     my $c = shift;
     my $base = $c->req->url->base;
     $base->parse('http://' . $hm_host . '/');
-    $base->port('');
+    $base->port(undef);
   });
 
 $t->get_ok('/get-hostmeta?uri=check.com')
@@ -101,17 +101,19 @@ $app->hook(
   });
 
 $t->get_ok('/.well-known/host-meta')
-    ->status_is(200)
-    ->content_type_is('application/xrd+xml')
-    ->element_exists('XRD')
-    ->element_exists('XRD[xmlns]')
-    ->element_exists('XRD[xsi]')
-    ->element_exists_not('Link')
-    ->element_exists('Property')
-    ->element_exists('Property[type="foo"]')
-    ->text_is('Property[type="foo"]' => 'bar')
-    ->element_exists('Host')
-    ->text_is(Host => $hm_host);
+  ->status_is(200)
+  ->content_type_is('application/xrd+xml')
+  ->element_exists('XRD')
+  ->element_exists('XRD[xmlns]')
+  ->element_exists('XRD[xsi]')
+  ->element_exists_not('Link')
+  ->element_exists('Property')
+  ->element_exists('Property[type="foo"]')
+  ->text_is('Property[type="foo"]' => 'bar')
+  ->element_exists('Host')
+  ->text_is(Host => $hm_host);
+
+
 
 my $xrd = $t->app->hostmeta('example.org');
 ok(!$xrd->property, 'Property not found.');

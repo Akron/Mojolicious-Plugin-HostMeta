@@ -3,7 +3,7 @@ use Mojo::Base 'Mojolicious::Plugin';
 use Mojo::Headers;
 use Mojo::Util qw/quote/;
 
-our $VERSION = '0.22';
+our $VERSION = '0.23';
 
 our $WK_PATH = '/.well-known/host-meta';
 
@@ -49,11 +49,11 @@ sub register {
   $app->hook(
     prepare_hostmeta =>
       sub {
-	my ($c, $hostmeta) = @_;
-	my $host = $c->req->url->to_abs->host;
+        my ($c, $hostmeta) = @_;
+        my $host = $c->req->url->to_abs->host;
 
-	# Add host-information to host-meta
-	$hostmeta->host( $host ) if $host;
+        # Add host-information to host-meta
+        $hostmeta->host( $host ) if $host;
       }
     );
 
@@ -68,8 +68,8 @@ sub register {
       # Host name is provided
       if (!$_[0] || ref $_[0]) {
 
-	# Return local hostmeta
-	return _serve_hostmeta( $c, $hostmeta, @_ );
+        # Return local hostmeta
+        return _serve_hostmeta( $c, $hostmeta, @_ );
       };
 
       # Return discovered hostmeta
@@ -90,22 +90,22 @@ sub register {
       # Seconds given
       if ($seconds) {
 
-	# Set cache control
-	my $headers = $c->res->headers;
-	$headers->cache_control(
-	  "public, max-age=$seconds"
-	);
+        # Set cache control
+        my $headers = $c->res->headers;
+        $headers->cache_control(
+          "public, max-age=$seconds"
+        );
 
-	# Set expires element
-	$hostmeta->expires( time + $seconds );
+        # Set expires element
+        $hostmeta->expires( time + $seconds );
 
-	# Set expires header
-	$headers->expires( $hostmeta->expires );
+        # Set expires header
+        $headers->expires( $hostmeta->expires );
       };
 
       # Serve host-meta document
       return $c->helpers->reply->xrd(
-	_serve_hostmeta( $c, $hostmeta )
+        _serve_hostmeta( $c, $hostmeta )
       );
     });
 };
@@ -174,28 +174,28 @@ sub _fetch_hostmeta {
 
     return $h->get_xrd(
       $path => $header => sub {
-	my ($xrd, $headers) = @_;
-	if ($xrd) {
+        my ($xrd, $headers) = @_;
+        if ($xrd) {
 
-	  # Add hostmeta extension
-	  $xrd->extension(-HostMeta);
+          # Add hostmeta extension
+          $xrd->extension(-HostMeta);
 
-	  # Hook for caching
-	  $c->app->plugins->emit_hook(
-	    after_fetching_hostmeta => (
-	      $c, $host, $xrd, $headers
-	    )
-	  );
+          # Hook for caching
+          $c->app->plugins->emit_hook(
+            after_fetching_hostmeta => (
+              $c, $host, $xrd, $headers
+            )
+          );
 
-	  # Filter based on relations
-	  $xrd = $xrd->filter_rel( $rel ) if $rel;
+          # Filter based on relations
+          $xrd = $xrd->filter_rel( $rel ) if $rel;
 
-	  # Send to callback
-	  return $cb->( $xrd, $headers );
-	};
+          # Send to callback
+          return $cb->( $xrd, $headers );
+        };
 
-	# Fail
-	return $cb->();
+        # Fail
+        return $cb->();
       });
   };
 
@@ -245,6 +245,7 @@ sub _serve_hostmeta {
 
   my $plugins = $c->app->plugins;
   my $phm = 'prepare_hostmeta';
+
 
   # prepare_hostmeta has subscribers
   if ($plugins->has_subscribers( $phm )) {
@@ -518,7 +519,7 @@ This plugin is part of the L<Sojolicious|http://sojolicio.us> project.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2011-2016, L<Nils Diewald|http://nils-diewald.de/>.
+Copyright (C) 2011-2017, L<Nils Diewald|http://nils-diewald.de/>.
 
 This program is free software, you can redistribute it
 and/or modify it under the terms of the Artistic License version 2.0.
