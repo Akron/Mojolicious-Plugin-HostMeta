@@ -3,7 +3,7 @@ use Mojo::Base 'Mojolicious::Plugin';
 use Mojo::Headers;
 use Mojo::Util qw/quote/;
 
-our $VERSION = '0.24';
+our $VERSION = '0.25';
 
 our $WK_PATH = '/.well-known/host-meta';
 
@@ -77,7 +77,7 @@ sub register {
     });
 
   # Establish /.well-known/host-meta route
-  my $route = $app->routes->route( $WK_PATH );
+  my $route = $app->routes->any( $WK_PATH );
 
   # Define endpoint
   $route->endpoint('host-meta');

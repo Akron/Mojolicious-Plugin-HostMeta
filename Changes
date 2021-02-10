@@ -1,3 +1,6 @@
+0.25 2021-02-10
+        - Remove deprecated route() in favor of any().
+
 0.24 2021-02-09
         - Move bugtracker to GitHub.
 
